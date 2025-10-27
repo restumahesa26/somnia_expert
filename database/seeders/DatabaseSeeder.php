@@ -6,6 +6,9 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Database\Seeders\GejalaSeeder;
+use Database\Seeders\PenyakitSeeder;
+use Database\Seeders\PenyakitGejalaSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,14 +22,20 @@ class DatabaseSeeder extends Seeder
             'username' => 'restumahesa',
             'email' => 'mufti.restumahesa@gmail.com',
             'password' => Hash::make('password'),
-            'role' => 'user',
+            'is_admin' => false,
         ]);
         User::create([
             'nama' => 'Admin',
             'username' => 'admin',
             'email' => 'admin@gmail.com',
             'password' => Hash::make('password'),
-            'role' => 'admin',
+            'is_admin' => true,
+        ]);
+
+        $this->call([
+            GejalaSeeder::class,
+            PenyakitSeeder::class,
+            PenyakitGejalaSeeder::class,
         ]);
     }
 }

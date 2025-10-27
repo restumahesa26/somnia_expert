@@ -39,145 +39,6 @@
                     </button>
                 </li>
 
-                <li class="dropdown notification-list topbar-dropdown">
-                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
-                        aria-haspopup="false" aria-expanded="false">
-                        <i data-feather="bell" class="noti-icon"></i>
-                        <span class="badge bg-danger rounded-circle noti-icon-badge">9</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end dropdown-lg">
-                        <!-- item-->
-                        <div class="dropdown-item noti-title">
-                            <h5 class="m-0">
-                                <span class="float-end"><a href="" class="text-dark"><small>Clear
-                                            All</small></a></span>Notification
-                            </h5>
-                        </div>
-
-                        <div class="noti-scroll" data-simplebar>
-                            <!-- item-->
-                            <a href="javascript:void(0);"
-                                class="dropdown-item notify-item text-muted link-primary active">
-                                <div class="notify-icon">
-                                    <img src="{{ url('dist/assets/images/users/user-12.jpg') }}" class="img-fluid rounded-circle"
-                                        alt="" />
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <p class="notify-details">Carl Steadham</p>
-                                    <small class="text-muted">5 min ago</small>
-                                </div>
-                                <p class="mb-0 user-msg">
-                                    <small class="fs-14">Completed <span class="text-reset">Improve workflow in
-                                            Figma</span></small>
-                                </p>
-                            </a>
-
-                            <!-- item-->
-                            <a href="javascript:void(0);"
-                                class="dropdown-item notify-item text-muted link-primary">
-                                <div class="notify-icon">
-                                    <img src="{{ url('dist/assets/images/users/user-2.jpg') }}" class="img-fluid rounded-circle"
-                                        alt="" />
-                                </div>
-                                <div class="notify-content">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <p class="notify-details">Olivia McGuire</p>
-                                        <small class="text-muted">1 min ago</small>
-                                    </div>
-
-                                    <div class="d-flex mt-2 align-items-center">
-                                        <div class="notify-sub-icon">
-                                            <i class="mdi mdi-download-box text-dark"></i>
-                                        </div>
-
-                                        <div>
-                                            <p class="notify-details mb-0">dark-themes.zip</p>
-                                            <small class="text-muted">2.4 MB</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <!-- item-->
-                            <a href="javascript:void(0);"
-                                class="dropdown-item notify-item text-muted link-primary">
-                                <div class="notify-icon">
-                                    <img src="{{ url('dist/assets/images/users/user-3.jpg') }}" class="img-fluid rounded-circle"
-                                        alt="" />
-                                </div>
-                                <div class="notify-content">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <p class="notify-details">Travis Williams</p>
-                                        <small class="text-muted">7 min ago</small>
-                                    </div>
-                                    <p class="noti-mentioned p-2 rounded-2 mb-0 mt-2">
-                                        <span class="text-primary">@Patryk</span> Please make sure that
-                                        youre....
-                                    </p>
-                                </div>
-                            </a>
-
-                            <!-- item-->
-                            <a href="javascript:void(0);"
-                                class="dropdown-item notify-item text-muted link-primary">
-                                <div class="notify-icon">
-                                    <img src="{{ url('dist/assets/images/users/user-8.jpg') }}" class="img-fluid rounded-circle"
-                                        alt="" />
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <p class="notify-details">Violette Lasky</p>
-                                    <small class="text-muted">5 min ago</small>
-                                </div>
-                                <p class="mb-0 user-msg">
-                                    <small class="fs-14">Completed <span class="text-reset">Create new
-                                            components</span></small>
-                                </p>
-                            </a>
-
-                            <!-- item-->
-                            <a href="javascript:void(0);"
-                                class="dropdown-item notify-item text-muted link-primary">
-                                <div class="notify-icon">
-                                    <img src="{{ url('dist/assets/images/users/user-5.jpg') }}" class="img-fluid rounded-circle"
-                                        alt="" />
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <p class="notify-details">Ralph Edwards</p>
-                                    <small class="text-muted">5 min ago</small>
-                                </div>
-                                <p class="mb-0 user-msg">
-                                    <small class="fs-14">Completed<span class="text-reset">Improve workflow in
-                                            React</span></small>
-                                </p>
-                            </a>
-
-                            <!-- item-->
-                            <a href="javascript:void(0);"
-                                class="dropdown-item notify-item text-muted link-primary">
-                                <div class="notify-icon">
-                                    <img src="{{ url('dist/assets/images/users/user-6.jpg') }}" class="img-fluid rounded-circle"
-                                        alt="" />
-                                </div>
-                                <div class="notify-content">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <p class="notify-details">Jocab jones</p>
-                                        <small class="text-muted">7 min ago</small>
-                                    </div>
-                                    <p class="noti-mentioned p-2 rounded-2 mb-0 mt-2">
-                                        <span class="text-reset">@Patryk</span> Please make sure that youre....
-                                    </p>
-                                </div>
-                            </a>
-                        </div>
-
-                        <!-- All-->
-                        <a href="javascript:void(0);"
-                            class="dropdown-item text-center text-primary notify-item notify-all">View all
-                            <i class="fe-arrow-right"></i>
-                        </a>
-                    </div>
-                </li>
-
                 <!-- User Dropdown -->
                 <li class="dropdown notification-list topbar-dropdown">
                     <a class="nav-link dropdown-toggle nav-user me-0" data-bs-toggle="dropdown" href="#"
@@ -194,26 +55,45 @@
                         <!-- item-->
                         <a href="pages-profile.html" class="dropdown-item notify-item">
                             <i class="mdi mdi-account-circle-outline fs-16 align-middle"></i>
-                            <span>My Account</span>
-                        </a>
-
-                        <!-- item-->
-                        <a href="auth-lock-screen.html" class="dropdown-item notify-item">
-                            <i class="mdi mdi-lock-outline fs-16 align-middle"></i>
-                            <span>Lock Screen</span>
+                            <span>Akun Saya</span>
                         </a>
 
                         <div class="dropdown-divider"></div>
 
                         <!-- item-->
-                        <a href="auth-logout.html" class="dropdown-item notify-item">
-                            <i class="mdi mdi-location-exit fs-16 align-middle"></i>
-                            <span>Logout</span>
-                        </a>
+                        <form method="POST" action="{{ route('logout') }}" id="logout-form">
+                            @csrf
+                            <a href="#" class="dropdown-item notify-item" onclick="event.preventDefault(); confirmLogout();">
+                                <i class="mdi mdi-location-exit fs-16 align-middle"></i>
+                                <span>Logout</span>
+                            </a>
+                        </form>
                     </div>
                 </li>
             </ul>
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmLogout() {
+        Swal.fire({
+            title: 'Konfirmasi Logout',
+            text: "Apakah Anda yakin ingin keluar dari sistem?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Logout!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+</script>
+@endpush
 <!-- end Topbar -->

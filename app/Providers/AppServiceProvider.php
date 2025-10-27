@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Helpers\Helper;
 use Illuminate\Support\ServiceProvider;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,5 +25,10 @@ class AppServiceProvider extends ServiceProvider
     {
         config(['app.locale' => 'id']);
         Carbon::setLocale('id');
+
+        // Saat local menggunakan Dev Tunnels (HTTPS via proxy), paksa https
+        if (App::environment('local')) {
+            URL::forceScheme('https');
+        }
     }
 }
