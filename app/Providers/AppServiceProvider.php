@@ -25,10 +25,5 @@ class AppServiceProvider extends ServiceProvider
     {
         config(['app.locale' => 'id']);
         Carbon::setLocale('id');
-
-        // Saat local menggunakan Dev Tunnels (HTTPS via proxy), paksa https
-        if (App::environment('local')) {
-            URL::forceScheme('https');
-        }
     }
 }

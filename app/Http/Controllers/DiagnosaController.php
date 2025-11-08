@@ -27,7 +27,7 @@ class DiagnosaController extends Controller
             'gejala.*' => 'integer',
             'nama_pasien' => 'required_if:is_admin_input,1|string|max:255',
             'umur' => 'required_if:is_admin_input,1|integer|min:1|max:150',
-            'jenis_kelamin' => 'required_if:is_admin_input,1|in:male,female',
+            'jenis_kelamin' => 'required_if:is_admin_input,1|in:L,P',
         ]);
 
         $ids = collect($request->input('gejala', []))
@@ -64,6 +64,8 @@ class DiagnosaController extends Controller
             $konsultasiData['umur'] = $request->input('umur');
             $konsultasiData['jenis_kelamin'] = $request->input('jenis_kelamin');
         }
+
+        dd($konsultasiData);
 
         // Create konsultasi
         $k = Konsultasi::create($konsultasiData);

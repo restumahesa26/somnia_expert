@@ -52,8 +52,8 @@
                             <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
                             <select class="form-select @error('jenis_kelamin') is-invalid @enderror"
                                 id="jenis_kelamin" name="jenis_kelamin" required>
-                                <option value="male" {{ old('jenis_kelamin') == 'male' ? 'selected' : '' }}>Laki-laki</option>
-                                <option value="female" {{ old('jenis_kelamin') == 'female' ? 'selected' : '' }}>Perempuan</option>
+                                <option value="male" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="female" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
                             </select>
                             @error('jenis_kelamin')
                                 <div class="invalid-feedback">{{ $message }}</div>
