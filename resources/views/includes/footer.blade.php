@@ -7,7 +7,7 @@
                     document.write(new Date().getFullYear())
 
                 </script> - Made with <span class="mdi mdi-heart text-danger"></span> by <a href="#!"
-                    class="text-reset fw-semibold">Zoyothemes</a>
+                    class="text-reset fw-semibold">Raisya Ghina Inayah</a>
             </div>
         </div>
     </div>

@@ -7,6 +7,7 @@ use App\Http\Controllers\PenyakitController;
 use App\Http\Controllers\PenyakitGejalaController;
 use App\Http\Controllers\DiagnosaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PenggunaController;
 
 Route::get('/', function () {
     return view('pages.home');
@@ -14,18 +15,20 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/akun-saya', [DashboardController::class, 'index'])->name('dashboard');
 
     // Admin only routes
     Route::middleware('admin')->group(function () {
         Route::resource('gejala', GejalaController::class);
         Route::resource('penyakit', PenyakitController::class);
         Route::resource('penyakit-gejala', PenyakitGejalaController::class)->except(['show']);
+        Route::resource('pengguna', PenggunaController::class);
     });
 
     Route::get('konsultasi', [DiagnosaController::class,'form'])->name('diagnosa.form');
     Route::post('konsultasi', [DiagnosaController::class,'proses'])->name('diagnosa.proses');
     Route::get('/diagnosa/riwayat', [DiagnosaController::class, 'riwayat'])->name('diagnosa.riwayat');
-    Route::get('/diagnosa/{konsultasi}', [DiagnosaController::class, 'show'])->name('diagnosa.show');
+    Route::get('/diagnosa/detail/{konsultasi}', [DiagnosaController::class, 'show'])->name('diagnosa.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

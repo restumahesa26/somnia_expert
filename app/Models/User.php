@@ -17,10 +17,11 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'nama',
         'email',
         'password',
         'is_admin',
+        'username',
     ];
 
     /**
@@ -49,6 +50,6 @@ class User extends Authenticatable
 
     public function konsultasis()
     {
-        return $this->hasMany(Konsultasi::class, 'created_by_id');
+        return $this->hasMany(Konsultasi::class);
     }
 }

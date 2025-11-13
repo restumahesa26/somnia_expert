@@ -27,15 +27,15 @@
             <div class="card-body">
                 <h4 class="mb-3">Data Pasien</h4>
                 <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="is_admin_input" name="is_admin_input" value="1">
+                    <input type="checkbox" class="form-check-input" id="is_admin_input" name="is_admin_input" @if(old('is_admin_input') == true) checked @endif>
                     <label class="form-check-label" for="is_admin_input">Input data pasien</label>
                 </div>
-                <div id="patientData" style="display: none;">
+                <div id="patientData" style="@if(old('is_admin_input') == true) display: block @else display: none @endif">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="nama_pasien" class="form-label">Nama Pasien</label>
                             <input type="text" class="form-control @error('nama_pasien') is-invalid @enderror"
-                                id="nama_pasien" name="nama_pasien" value="{{ old('nama_pasien') }}">
+                                id="nama_pasien" name="nama_pasien" value="{{ old('nama_pasien') }}" placeholder="Masukkan nama pasien..">
                             @error('nama_pasien')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -43,7 +43,7 @@
                         <div class="col-md-3 mb-3">
                             <label for="umur" class="form-label">Umur</label>
                             <input type="number" class="form-control @error('umur') is-invalid @enderror"
-                                id="umur" name="umur" value="{{ old('umur') }}" min="1" max="150">
+                                id="umur" name="umur" value="{{ old('umur') }}" min="1" max="150" placeholder="Masukkan umur..">
                             @error('umur')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -52,8 +52,8 @@
                             <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
                             <select class="form-select @error('jenis_kelamin') is-invalid @enderror"
                                 id="jenis_kelamin" name="jenis_kelamin" required>
-                                <option value="male" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                                <option value="female" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                                <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
                             </select>
                             @error('jenis_kelamin')
                                 <div class="invalid-feedback">{{ $message }}</div>

@@ -17,7 +17,7 @@
             <div class="col-md-4">
                 <p class="mb-1">
                     <strong>Jenis Kelamin:</strong>
-                    {{ $konsultasi->jenis_kelamin == 'male' ? 'Laki-laki' : 'Perempuan' }}
+                    {{ $konsultasi->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}
                 </p>
             </div>
         </div>

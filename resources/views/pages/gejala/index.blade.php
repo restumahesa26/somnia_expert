@@ -15,6 +15,8 @@
     </div>
 </div>
 
+@include('components.flash')
+
 <!-- Datatables  -->
 <div class="row">
     <div class="col-12">
@@ -30,6 +32,7 @@
                 <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
                     <thead>
                         <tr>
+                            <th>No</th>
                             <th>Kode</th>
                             <th>Nama</th>
                             <th>Aksi</th>
@@ -38,6 +41,7 @@
                     <tbody>
                         @forelse ($items as $item)
                             <tr>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->kode_gejala }}</td>
                                 <td>{{ $item->nama_gejala }}</td>
                                 <td>
@@ -89,26 +93,40 @@
 @endsection
 
 @push('styles')
-    <!-- Datatables css -->
-    <link href="{{ url('dist/assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url('dist/assets/libs/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css') }}" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 @endpush
 
 @push('scripts')
-    <!-- Datatables js -->
-    <script src="{{ url('dist/assets/libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-
-    <!-- dataTables.bootstrap5 -->
-    <script src="{{ url('dist/assets/libs/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
-    <script src="{{ url('dist/assets/libs/datatables.net-buttons/js/dataTables.buttons.min.js') }}"></script>
-
-    <!-- dataTable.responsive -->
-    <script src="{{ url('dist/assets/libs/datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ url('dist/assets/libs/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
     <script>
-        $(document).ready(function() {
-            $('#datatable').DataTable();
+        $(function () {
+            const table = $('#datatable').DataTable({
+                responsive: true,
+                lengthChange: true,
+                pageLength: 10,
+                autoWidth: false,
+                order: [[0, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: [3] } // kolom Aksi tidak bisa di-sort
+                ],
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/id.json'
+                }
+            });
+
+            // Re-number kolom "No" saat sort/search
+            table.on('order.dt search.dt', function () {
+                let i = 1;
+                table.cells(null, 0, { search: 'applied', order: 'applied' }).every(function () {
+                    this.data(i++);
+                });
+            }).draw();
         });
         function handleDelete(id, name) {
             const deleteForm = document.getElementById('deleteForm');

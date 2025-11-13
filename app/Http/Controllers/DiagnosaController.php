@@ -25,9 +25,10 @@ class DiagnosaController extends Controller
         $request->validate([
             'gejala' => 'required|array',
             'gejala.*' => 'integer',
-            'nama_pasien' => 'required_if:is_admin_input,1|string|max:255',
-            'umur' => 'required_if:is_admin_input,1|integer|min:1|max:150',
-            'jenis_kelamin' => 'required_if:is_admin_input,1|in:L,P',
+            'is_admin_input' => ['sometimes','boolean'],
+            'nama_pasien'    => ['nullable','required_if:is_admin_input,true','string','max:255'],
+            'umur'           => ['nullable','required_if:is_admin_input,true','integer','min:1','max:150'],
+            'jenis_kelamin'  => ['nullable','required_if:is_admin_input,true','in:L,P'],
         ]);
 
         $ids = collect($request->input('gejala', []))
@@ -65,7 +66,7 @@ class DiagnosaController extends Controller
             $konsultasiData['jenis_kelamin'] = $request->input('jenis_kelamin');
         }
 
-        dd($konsultasiData);
+        //dd($konsultasiData);
 
         // Create konsultasi
         $k = Konsultasi::create($konsultasiData);
