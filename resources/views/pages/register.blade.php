@@ -21,9 +21,9 @@
                                             <form method="POST" action="{{ route('register') }}" class="pt-0">
                                                 @csrf
                                                 <div class="mb-3">
-                                                    <label class="form-label" for="name">Name</label>
-                                                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required placeholder="Enter your name">
-                                                    @error('name')
+                                                    <label class="form-label" for="nama">Name</label>
+                                                    <input type="text" class="form-control @error('nama') is-invalid @enderror" id="nama" name="nama" value="{{ old('nama') }}" required placeholder="Enter your name">
+                                                    @error('nama')
                                                         <span class="invalid-feedback" role="alert">
                                                             <strong>{{ $message }}</strong>
                                                         </span>
