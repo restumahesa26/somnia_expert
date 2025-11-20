@@ -136,6 +136,7 @@
                             <table class="table table-sm table-bordered diagnosa-table">
                                 <thead>
                                     <tr class="table-light">
+                                        <th>Kode</th>
                                         <th style="min-width: 200px">Gejala</th>
                                         <th>Credit<br><small>(Input User)</small></th>
                                         <th>NS<br><small>(Jumlah Gejala)</small></th>
@@ -157,6 +158,7 @@
                                             $totalTV = $detail['tv']; // TV akan sama untuk semua row
                                         @endphp
                                         <tr @if($detail['credit'] > 0) class="table-success" @endif>
+                                            <td>{{ $gejalas->firstWhere('id', $gejalaId)->kode_gejala }}</td>
                                             <td>{{ $gejalas->firstWhere('id', $gejalaId)->nama_gejala }}</td>
                                             <td class="text-center">{{ $detail['credit'] }}</td>
                                             <td class="text-center">{{ $detail['ns'] }}</td>
@@ -201,25 +203,41 @@
                                     <tr>
                                         <td width="200" class="fw-medium">Total VUR</td>
                                         <td>= {{ number_format($totalVUR, 4) }}</td>
-                                        <td class="small text-muted">Jumlah semua nilai VUR dari tabel VCIRS di atas</td>
+                                        <td class="small text-muted">
+                                            Jumlah semua nilai VUR dari tabel VCIRS di atas
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td class="fw-medium">Total TV</td>
                                         <td>= {{ $totalTV }}</td>
-                                        <td class="small text-muted">Total gejala valid untuk penyakit ini</td>
+                                        <td class="small text-muted">
+                                            Total gejala valid untuk penyakit ini
+                                        </td>
+                                    </tr>
+                                    <tr class="table-info">
+                                        <td class="fw-bold">NUR (VCIRS)</td>
+                                        <td>
+                                            = Total VUR / Total TV<br>
+                                            = {{ number_format($totalVUR, 4) }} / {{ $totalTV }}<br>
+                                            = {{ number_format($row['nur'], 4) }}
+                                        </td>
+                                        <td class="small text-muted">
+                                            Nilai rata-rata VUR untuk penyakit ini (Normalisasi VUR)
+                                        </td>
                                     </tr>
                                     <tr class="table-info">
                                         <td class="fw-bold">RUR (VCIRS)</td>
                                         <td>
-                                            = Total VUR / Total TV<br>
-                                            = {{ number_format($totalVUR, 4) }} / {{ $totalTV }}<br>
+                                            = NUR / Total TV<br>
+                                            = {{ number_format($row['nur'], 4) }} / {{ $totalTV }}<br>
                                             = {{ number_format($row['rur'], 4) }}
                                         </td>
                                         <td class="small text-muted">
-                                            <strong>Nilai ini akan digunakan dalam perhitungan CF berikutnya</strong>
+                                            Nilai yang dipakai sebagai bobot dalam perhitungan CF berikutnya
                                         </td>
                                     </tr>
                                 </table>
+
                             </div>
                         </div>
                     </div>

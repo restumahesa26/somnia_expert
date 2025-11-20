@@ -21,16 +21,17 @@ class PenyakitGejalaSeeder extends Seeder
         // =========================
         $p01 = $getPenyakitId('P01');
         $insomnia = [
-            'G01' => 1.00,
-            'G02' => 0.91,
-            'G03' => 0.82,
-            'G04' => 0.73,
-            'G05' => 0.64,
-            'G06' => 0.56,
-            'G07' => 0.47,
-            'G08' => 0.38,
-            'G09' => 0.29,
-            'G10' => 0.20,
+            'G01' => 0.85,
+            'G02' => 0.85,
+            'G03' => 0.85,
+            'G04' => 0.7,
+            'G11' => 0.7,
+            'G05' => 0.5,
+            'G06' => 0.5,
+            'G07' => 0.5,
+            'G08' => 0.2,
+            'G09' => 0.2,
+            'G10' => 0.2,
         ];
         foreach ($insomnia as $kodeGejala => $bobot) {
             PenyakitGejala::updateOrCreate(
@@ -44,12 +45,21 @@ class PenyakitGejalaSeeder extends Seeder
         // =========================
         $p02 = $getPenyakitId('P02');
         $osa = [
-            'G11' => 1.00,
-            'G12' => 0.90,
-            'G13' => 0.80,
-            'G14' => 0.70,
-            'G15' => 0.60,
-            'G16' => 0.50, // dst jika ada di referensi kamu
+            'G12' => 1.0,
+            'G13' => 0.85,
+            'G14' => 0.85,
+            'G15' => 0.85,
+            'G02' => 0.7, // G2 di source
+            'G19' => 0.7,
+            'G20' => 0.7,
+            'G11' => 0.5,
+            'G05' => 0.5, // G5 di source
+            'G18' => 0.5,
+            'G06' => 0.5, // G6 di source
+            'G22' => 0.5,
+            'G16' => 0.2,
+            'G21' => 0.2,
+            'G17' => 0.2,
         ];
         foreach ($osa as $kodeGejala => $bobot) {
             PenyakitGejala::updateOrCreate(
@@ -63,12 +73,23 @@ class PenyakitGejalaSeeder extends Seeder
         // =========================
         $p03 = $getPenyakitId('P03');
         $hipersomnia = [
-            'G17' => 1.00,
-            'G18' => 0.90,
-            'G19' => 0.80,
-            'G20' => 0.70,
-            'G21' => 0.60,
-            'G23' => 0.50
+            'G23' => 0.85,
+            'G11' => 0.85,
+            'G24' => 0.85,
+            'G25' => 0.7,
+            'G32' => 0.7,
+            'G26' => 0.7,
+            'G30' => 0.5,
+            'G27' => 0.5,
+            'G05' => 0.5, // G5 di source
+            'G06' => 0.5, // G6 di source
+            'G22' => 0.5,
+            'G31' => 0.2,
+            'G29' => 0.2,
+            'G33' => 0.2,
+            'G34' => 0.2,
+            'G08' => 0.2, // G8 di source
+            'G28' => 0.2,
         ];
         foreach ($hipersomnia as $kodeGejala => $bobot) {
             PenyakitGejala::updateOrCreate(
@@ -82,15 +103,16 @@ class PenyakitGejalaSeeder extends Seeder
         // =========================
         $p04 = $getPenyakitId('P04');
         $sleepwalking = [
-            'G24'=>1.00,
-            'G25'=>0.90,
-            'G26'=>0.85,
-            'G27'=>0.75,
-            'G28'=>0.70,
-            'G29'=>0.65,
-            'G30'=>0.60,
-            'G31'=>0.55,
-            'G32'=>0.50
+            'G35' => 0.85,
+            'G37' => 0.85,
+            'G36' => 0.85,
+            'G38' => 0.7,
+            'G39' => 0.7,
+            'G40' => 0.7,
+            'G16' => 0.5,
+            'G41' => 0.5,
+            'G05' => 0.2, // G5 di source
+            'G11' => 0.2,
         ];
         foreach ($sleepwalking as $kodeGejala => $bobot) {
             PenyakitGejala::updateOrCreate(
@@ -104,12 +126,15 @@ class PenyakitGejalaSeeder extends Seeder
         // =========================
         $p05 = $getPenyakitId('P05');
         $sirkadian = [
-            'G33'=>1.00,
-            'G34'=>0.90,
-            'G35'=>0.85,
-            'G36'=>0.80,
-            'G37'=>0.75,
-            'G38'=>0.70
+            'G42' => 0.85,
+            'G43' => 0.85,
+            'G44' => 0.85,
+            'G45' => 0.7,
+            'G46' => 0.7,
+            'G47' => 0.7,
+            'G06' => 0.5, // G6 di source
+            'G16' => 0.5,
+            'G05' => 0.5, // G5 di source
         ];
         foreach ($sirkadian as $kodeGejala => $bobot) {
             PenyakitGejala::updateOrCreate(

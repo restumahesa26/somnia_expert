@@ -41,8 +41,8 @@ class PenyakitGejalaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'penyakit_id' => ['required','exists:penyakits,id'],
-            'gejala_id'   => ['required','exists:gejalas,id',
+            'penyakit_id' => ['required','exists:penyakit,id'],
+            'gejala_id'   => ['required','exists:gejala,id',
                 Rule::unique('penyakit_gejala')->where(fn($q)=>$q->where('penyakit_id',$request->penyakit_id))
             ],
             'bobot'       => ['required','numeric','between:0,1.0'],

@@ -52,9 +52,9 @@ class DiagnosaController extends Controller
             'hasil' => $sortedHasil->map(function($row){
                 return [
                     'penyakit_id' => $row['penyakit']->id,
-                    'kode' => $row['penyakit']->kode_penyakit,
-                    'nama' => $row['penyakit']->nama_penyakit,
-                    'percent' => $row['percent'],
+                    'kode'        => $row['penyakit']->kode_penyakit,
+                    'nama'        => $row['penyakit']->nama_penyakit,
+                    'percent'     => $row['percent'],
                 ];
             })->values()->all(),
         ];

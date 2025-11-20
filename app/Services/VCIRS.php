@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Gejala;
@@ -8,62 +9,98 @@ class VCIRS
 {
     public function diagnose(array $selectedGejalaIds): array
     {
-        // Ambil semua penyakit beserta gejala & bobot
-        $penyakits = Penyakit::with(['gejalas' => function($q) {
+        // Ambil semua penyakit beserta relasi gejala + bobot pakar
+        $penyakits = Penyakit::with(['gejalas' => function ($q) {
             $q->orderBy('penyakit_gejala.id');
         }])->get();
 
-        $nsPerGejala = Gejala::withCount('penyakits')->pluck('penyakits_count','id');
+        // NS = banyaknya penyakit yang memiliki gejala tersebut
+        $nsPerGejala = Gejala::withCount('penyakits')->pluck('penyakits_count', 'id');
 
         $hasil = [];
 
         foreach ($penyakits as $penyakit) {
             $gejalas = $penyakit->gejalas;
+
+            if ($gejalas->isEmpty()) {
+                continue;
+            }
+
+            // TV = jumlah gejala pada penyakit ini
             $tv = max(1, $gejalas->count());
 
-            // Hitung VUR untuk tiap gejala
-            $vurList = [];
-            foreach ($gejalas as $index => $g) {
+            // 1. Susun data dasar gejala: credit, NS, CF pakar
+            $temp = [];
+            foreach ($gejalas as $g) {
                 $gejalaId = $g->id;
-                // Ubah credit menjadi bobot dari input user
+
                 $credit = in_array($gejalaId, $selectedGejalaIds) ? 1.0 : 0.0;
+                $ns = max(1, (int) ($nsPerGejala[$gejalaId] ?? 1));
+                $cfPakar = (float) ($g->pivot->bobot ?? 0);
 
-                $ns = max(1, (int)($nsPerGejala[$gejalaId] ?? 1));
-                $vo = $index + 1;
-                $cd = $vo / $tv;
-
-                $weight = $ns * $cd;
-                $vur = $credit * $weight;
-
-                $vurList[$gejalaId] = [
-                    'credit' => $credit,
-                    'ns' => $ns,
-                    'vo' => $vo,
-                    'tv' => $tv,
-                    'cd' => $cd,
-                    'weight' => $weight,
-                    'vur' => $vur,
-                    // Ambil bobot dari pivot table sebagai CF pakar
-                    'cf_pakar' => (float)$g->pivot->bobot,
+                $temp[] = [
+                    'id'       => $gejalaId,
+                    'model'    => $g,
+                    'credit'   => $credit,
+                    'ns'       => $ns,
+                    'cf_pakar' => $cfPakar,
                 ];
             }
 
-            // Hitung NUR & RUR
-            $sumVur = array_sum(array_column($vurList, 'vur'));
-            $nur = $sumVur / $tv;
-            $rur = $nur;
+            // 2. Urutkan berdasarkan NS ASCENDING, lalu id gejala
+            usort($temp, function ($a, $b) {
+                if ($a['ns'] === $b['ns']) {
+                    return $a['id'] <=> $b['id'];
+                }
+                return $a['ns'] <=> $b['ns'];
+            });
 
-            // Hitung CF kombinasi dengan metode CF
+            // 3. Hitung VO, CD, Weight, VUR
+            $vurList = [];
+            $sumVur = 0.0;
+
+            foreach ($temp as $index => $row) {
+                $vo = $index + 1;                // VO
+                $cd = $vo / $tv;                 // CD = VO / TV
+                $weight = $row['ns'] * $cd;      // Weight = NS × CD
+                $vur = $row['credit'] * $weight; // VUR = Credit × Weight
+
+                $sumVur += $vur;
+
+                $vurList[$row['id']] = [
+                    'gejala'   => $row['model'],
+                    'credit'   => $row['credit'],
+                    'ns'       => $row['ns'],
+                    'vo'       => $vo,
+                    'cd'       => $cd,
+                    'weight'   => $weight,
+                    'vur'      => $vur,
+                    'cf_pakar' => $row['cf_pakar'],
+                    'tv'       => $tv, // DITAMBAHKAN
+                ];
+            }
+
+            // 4. Hitung NUR dan RUR sesuai jurnal
+            //    NUR = Σ VUR / TV
+            //    RUR = NUR / TV
+            $nur = $sumVur / $tv;
+            $rur = $nur / $tv;
+
+            // 5. Hitung CF kombinasi
             $cfCombined = 0.0;
             $cfFirst = true;
 
-            foreach ($vurList as $gejalaId => $it) {
-                if ($it['credit'] <= 0) continue;
+            foreach ($vurList as $item) {
+                if ($item['credit'] <= 0 || $item['cf_pakar'] <= 0) {
+                    continue;
+                }
 
-                $cfHe = $it['cf_pakar'] * $it['credit'];
+                // CF gejala berdasarkan pakar
+                $cfHe = $item['cf_pakar'] * $item['credit'];
+
+                // Diberi bobot RUR
                 $cfWeighted = $cfHe * $rur;
 
-                // Gabungkan CF dengan metode kombinasi
                 if ($cfFirst) {
                     $cfCombined = $cfWeighted;
                     $cfFirst = false;
@@ -72,22 +109,23 @@ class VCIRS
                 }
             }
 
-            // Hitung persentase akhir
+            // 6. Konversi ke persen
             $persen = round($cfCombined * 100, 2);
 
-            // Hanya masukkan ke hasil jika ada gejala yang cocok
             if ($persen > 0) {
                 $hasil[$penyakit->id] = [
                     'penyakit' => $penyakit,
-                    'percent' => $persen,
-                    'rur' => $rur,
-                    'detail' => $vurList,
+                    'percent'  => $persen,
+                    'tv'       => $tv,
+                    'nur'      => $nur,
+                    'rur'      => $rur,
+                    'detail'   => $vurList,
                 ];
             }
         }
 
-        // Urutkan berdasarkan persentase tertinggi
-        uasort($hasil, fn($a, $b) => $b['percent'] <=> $a['percent']);
+        // Urutkan penyakit berdasarkan persen tertinggi
+        uasort($hasil, fn ($a, $b) => $b['percent'] <=> $a['percent']);
 
         return $hasil;
     }

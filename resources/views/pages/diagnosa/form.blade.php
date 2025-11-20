@@ -27,7 +27,7 @@
             <div class="card-body">
                 <h4 class="mb-3">Data Pasien</h4>
                 <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="is_admin_input" name="is_admin_input" @if(old('is_admin_input') == true) checked @endif>
+                    <input type="checkbox" class="form-check-input" id="is_admin_input" name="is_admin_input" value="1" @if(old('is_admin_input') == 1) checked @endif>
                     <label class="form-check-label" for="is_admin_input">Input data pasien</label>
                 </div>
                 <div id="patientData" style="@if(old('is_admin_input') == true) display: block @else display: none @endif">
