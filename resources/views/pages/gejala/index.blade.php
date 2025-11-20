@@ -29,7 +29,7 @@
             </div><!-- end card header -->
 
             <div class="card-body">
-                <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
+                <table id="datatable" class="table table-bordered dt-responsive table-responsive datatable">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -95,6 +95,16 @@
 @push('styles')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+
+    <style>
+        /* Memaksa kolom ke-3 (Gejala) untuk wrap text */
+        .datatable tbody td:nth-child(3) {
+            white-space: normal !important; /* Mengizinkan teks turun ke bawah */
+            word-wrap: break-word;          /* Memotong kata jika terlalu panjang */
+            min-width: 200px;               /* Lebar minimal agar tidak terlalu gepeng */
+            max-width: 400px;               /* Lebar maksimal (opsional) */
+        }
+    </style>
 @endpush
 
 @push('scripts')

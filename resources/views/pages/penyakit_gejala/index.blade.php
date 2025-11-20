@@ -50,7 +50,7 @@
                     </div>
                 </div>
 
-                <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
+                <table id="datatable" class="table table-bordered dt-responsive table-responsive datatable">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -116,6 +116,16 @@
 @push('styles')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+
+    <style>
+        /* Memaksa kolom ke-3 (Gejala) untuk wrap text */
+        .datatable tbody td:nth-child(3) {
+            white-space: normal !important; /* Mengizinkan teks turun ke bawah */
+            word-wrap: break-word;          /* Memotong kata jika terlalu panjang */
+            min-width: 200px;               /* Lebar minimal agar tidak terlalu gepeng */
+            max-width: 400px;               /* Lebar maksimal (opsional) */
+        }
+    </style>
 @endpush
 
 @push('scripts')
@@ -150,10 +160,30 @@
             }).draw();
         });
 
+        $('#filter_penyakit, #filter_gejala').on('change', function() {
+            var penyakitId = $('#filter_penyakit').val();
+            var gejalaId = $('#filter_gejala').val();
+            var url = "{{ route('penyakit-gejala.index') }}";
+            window.location.href = url + '?penyakit_id=' + penyakitId + '&gejala_id=' + gejalaId;
+        });
+
         function handleDelete(id, name) {
             $('#deleteItemName').text(name);
             $('#deleteForm').attr('action', `{{ url('penyakit-gejala') }}/${id}`);
             $('#deleteModal').modal('show');
         }
+
+        // Event listener untuk kedua dropdown
+        $('#filter_penyakit, #filter_gejala').on('change', function() {
+            // Ambil value dari masing-masing dropdown
+            var penyakitId = $('#filter_penyakit').val();
+            var gejalaId = $('#filter_gejala').val();
+
+            // Ambil URL dasar halaman saat ini
+            var url = "{{ route('penyakit-gejala.index') }}";
+
+            // Redirect halaman dengan parameter query string
+            window.location.href = url + '?penyakit_id=' + penyakitId + '&gejala_id=' + gejalaId;
+        });
     </script>
 @endpush

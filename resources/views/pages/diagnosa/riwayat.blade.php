@@ -63,7 +63,7 @@
 <script>
     $(document).ready(function() {
         $('#datatable').DataTable({
-            order: [[0, 'desc']]
+            ordering: false  // Menambahkan baris ini
         });
     });
 </script>

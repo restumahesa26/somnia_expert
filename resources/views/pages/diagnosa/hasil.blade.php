@@ -348,10 +348,10 @@
                                             <strong>Cara perhitungan:</strong><br>
                                             @foreach($cfCalculations as $index => $calc)
                                                 @if($index == 0)
-                                                    CF1 = {{ number_format($calc['cfWeighted'], 4) }}<br>
+                                                    CFR1 = {{ number_format($calc['cfWeighted'], 4) }}<br>
                                                 @else
                                                     <div class="mt-2">
-                                                        CF{{ $index + 1 }} = {{ number_format($calc['running_total'], 4) }}<br>
+                                                        CFR{{ $index + 1 }} = {{ number_format($calc['running_total'], 4) }}<br>
                                                         <span class="text-muted">&nbsp;&nbsp;= CF{{ $index }} + ({{ number_format($calc['cfWeighted'], 4) }} × (1 - {{ number_format($cfCalculations[$index-1]['running_total'], 4) }}))</span><br>
                                                         <span class="text-muted">&nbsp;&nbsp;= CF{{ $index }} + ({{ number_format($calc['cfWeighted'], 4) }} × {{ number_format(1 - $cfCalculations[$index-1]['running_total'], 4) }})</span><br>
                                                         <span class="text-muted">&nbsp;&nbsp;= {{ number_format($cfCalculations[$index-1]['running_total'], 4) }} + {{ number_format($calc['cfWeighted'] * (1 - $cfCalculations[$index-1]['running_total']), 4) }}</span>

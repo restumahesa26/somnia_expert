@@ -12,7 +12,7 @@
 
 <!-- Start Main Widgets -->
 <div class="row g-3">
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card">
             <div class="card-body d-flex align-items-center">
                 <div class="me-3">
@@ -26,7 +26,7 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card">
             <div class="card-body d-flex align-items-center">
                 <div class="me-3">
@@ -40,7 +40,7 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    {{--  <div class="col-md-3">
         <div class="card">
             <div class="card-body d-flex align-items-center">
                 <div class="me-3">
@@ -52,9 +52,9 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>  --}}
 
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card">
             <div class="card-body d-flex align-items-center">
                 <div class="me-3">
@@ -71,7 +71,7 @@
 <!-- End Main Widgets -->
 
 <div class="row mt-3">
-    <div class="col-xl-8">
+    <div class="col-xl-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">Tren Rata-rata Persentase Diagnosa (7 Hari)</h5>
@@ -81,7 +81,7 @@
             </div>
         </div>
     </div>
-    <div class="col-xl-4">
+    {{--  <div class="col-xl-4">
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">Distribusi Tingkat Keparahan</h5>
@@ -90,10 +90,10 @@
                 <div id="severity-distribution" class="apex-charts" style="min-height: 280px;"></div>
             </div>
         </div>
-    </div>
+    </div>  --}}
 </div>
 
-<div class="row mt-3">
+{{--  <div class="row mt-3">
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -138,7 +138,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>  --}}
 
 @endsection
 
