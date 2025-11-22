@@ -3,7 +3,7 @@ pipeline {
     environment {
         IMAGE_NAME = "somnia-app-dev"
         CONTAINER_NAME = "somnia-staging"
-        PORT = "8080"
+        PORT = "8080" // Ini Port Laptop (Boleh 8080)
         PATH_SECRETS = "/var/jenkins_home/secrets"
     }
     stages {
@@ -24,16 +24,24 @@ pipeline {
                     sh "docker rm -f ${CONTAINER_NAME} || true"
                     sh "docker network create laravel-net || true"
 
+                    // Kita tambahkan perintah 'php artisan serve' di bagian paling belakang
+                    // Host 0.0.0.0 PENTING agar bisa diakses dari luar container
                     sh """
                         docker run -d --name ${CONTAINER_NAME} \
-                        -p ${PORT}:80 \
+                        -p ${PORT}:8000 \
                         --network laravel-net \
                         -v ${PATH_SECRETS}/.env.staging:/var/www/.env \
-                        ${IMAGE_NAME}:dev
+                        ${IMAGE_NAME}:dev \
+                        php artisan serve --host=0.0.0.0 --port=8000
                     """
 
                     sleep 5
-                    sh "docker exec ${CONTAINER_NAME} php /var/www/artisan migrate --force"
+
+                    // Migrate tetap jalan
+                    sh "docker exec ${CONTAINER_NAME} php artisan migrate --force"
+
+                    // Fix Permission (Sering bikin layar putih kalau storage gak bisa ditulis)
+                    sh "docker exec ${CONTAINER_NAME} chmod -R 777 storage bootstrap/cache"
                 }
             }
         }
