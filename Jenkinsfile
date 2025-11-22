@@ -93,7 +93,8 @@ pipeline {
                     """
 
                     sleep 5
-                    sh "docker exec ${CONTAINER_PROD} php artisan migrate --force"
+                    // Tambahkan /var/www/ di depannya
+                    sh "docker exec ${CONTAINER_DEV} php /var/www/artisan migrate --force"
 
                     echo "✅ Sukses! Production sekarang versi ${params.VERSION_TO_PROMOTE}"
                 }
