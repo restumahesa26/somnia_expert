@@ -93,7 +93,10 @@ pipeline {
                     """
 
                     sleep 5
-                    // Tambahkan /var/www/ di depannya
+                    // 1. Cek dulu ada file apa di dalam folder /var/www?
+                    sh "docker exec ${CONTAINER_DEV} ls -la /var/www"
+
+                    // 2. Baru jalankan migrate
                     sh "docker exec ${CONTAINER_DEV} php /var/www/artisan migrate --force"
 
                     echo "✅ Sukses! Production sekarang versi ${params.VERSION_TO_PROMOTE}"
