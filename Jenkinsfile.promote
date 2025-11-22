@@ -1,20 +1,24 @@
 pipeline {
     agent any
 
-    // Menu Pilihan Versi
+    // Menu Input untuk memilih versi image
     parameters {
         string(
             name: 'VERSION_TO_DEPLOY',
-            defaultValue: '',
-            description: 'Masukkan Nomor Build yang mau di-deploy (Lihat dari pipeline build)'
+            defaultValue: 'latest',
+            description: 'Masukkan Nomor Build yang mau di-deploy (Contoh: 5, atau latest)'
         )
     }
 
     environment {
-        // Harus sama dengan nama image di File 2
+        // FIX: Pastikan nama image SAMA PERSIS dengan yang ada di Jenkinsfile.build
         IMAGE_NAME = "somnia-app-prod-candidate"
+
         CONTAINER_NAME = "somnia-production"
-        PORT = "9090"
+        PORT = "9090" // Port Production
+
+        // Sesuaikan path ini dengan laptop kamu (yang tadi sudah berhasil di Dev)
+        // INGAT: Ganti 'MUFTI RESTU MAHESA' jika perlu penanganan spasi, tapi pakai kutip di bawah nanti aman.
         PATH_SECRETS = "C:/Users/MUFTI RESTU MAHESA/Documents/Proyek Iseng/Website/my_jenkins/jenkins-secrets"
     }
 
@@ -22,34 +26,47 @@ pipeline {
         stage('Validate Image') {
             steps {
                 script {
+                    // Cek apakah user mengisi parameter?
                     if (params.VERSION_TO_DEPLOY == '') {
                         error "⛔ Masukkan nomor versi dulu!"
                     }
+
                     echo "🔍 Mencari Image Versi: ${params.VERSION_TO_DEPLOY}..."
-                    // Cek apakah image ada di laptop
+
+                    // Cek apakah image tersebut benar-benar ada di laptop?
                     sh "docker inspect ${IMAGE_NAME}:${params.VERSION_TO_DEPLOY} > /dev/null"
                 }
             }
         }
+
         stage('Deploy Production') {
             steps {
                 script {
                     echo "🏆 Deploying Version ${params.VERSION_TO_DEPLOY} to Port ${PORT}..."
 
                     sh "docker rm -f ${CONTAINER_NAME} || true"
+
+                    // Pastikan network ada
                     sh "docker network create laravel-net || true"
 
-                    // Jalankan image hasil build sebelumnya
+                    // FIX: Gunakan tanda kutip " di path volume agar spasi terbaca
+                    // FIX: Gunakan .env.production (bukan staging)
+                    // FIX: Gunakan ${params.VERSION_TO_DEPLOY} (bukan :dev)
                     sh """
                         docker run -d --name ${CONTAINER_NAME} \
                         -p ${PORT}:8000 \
                         --network laravel-net \
-                        -v "${PATH_SECRETS}/.env.staging":/var/www/.env \
-                        ${IMAGE_NAME}:dev \
+                        -v "${PATH_SECRETS}/.env.production":/var/www/.env \
+                        ${IMAGE_NAME}:${params.VERSION_TO_DEPLOY} \
                         php artisan serve --host=0.0.0.0 --port=8000
                     """
 
                     sleep 5
+
+                    // Fix Permission agar tidak error 500
+                    sh "docker exec ${CONTAINER_NAME} chmod -R 777 storage bootstrap/cache"
+
+                    // FIX: Gunakan full path artisan
                     sh "docker exec ${CONTAINER_NAME} php /var/www/artisan migrate --force"
                 }
             }
