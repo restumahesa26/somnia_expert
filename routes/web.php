@@ -15,7 +15,6 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/akun-saya', [DashboardController::class, 'index'])->name('dashboard');
 
     // Admin only routes
     Route::middleware('admin')->group(function () {
@@ -29,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::post('konsultasi', [DiagnosaController::class,'proses'])->name('diagnosa.proses');
     Route::get('/diagnosa/riwayat', [DiagnosaController::class, 'riwayat'])->name('diagnosa.riwayat');
     Route::get('/diagnosa/detail/{konsultasi}', [DiagnosaController::class, 'show'])->name('diagnosa.show');
+    Route::delete('/diagnosa/hapus/{konsultasi}', [DiagnosaController::class, 'destroy'])->name('diagnosa.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

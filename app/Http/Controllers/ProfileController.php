@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
@@ -33,6 +34,13 @@ class ProfileController extends Controller
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
+
+        $file = $request->file('foto');
+        $namaFile = time() . '_' . Str::random(20) . '.' . $file->getClientOriginalExtension();
+        $tujuanUpload = 'uploads/foto-profil';
+        $file->move(public_path($tujuanUpload), $namaFile);
+
+        $user->foto = $namaFile;
 
         $user->save();
 

@@ -77,9 +77,13 @@ class DiagnosaController extends Controller
 
     public function riwayat()
     {
-        $riwayat = Konsultasi::where('user_id', auth()->id())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = Konsultasi::query();
+
+        if (auth()->user()->is_admin == false) {
+            $query->where('user_id', auth()->id());
+        }
+
+        $riwayat = $query->latest()->get();
 
         return view('pages.diagnosa.riwayat', compact('riwayat'));
     }
@@ -106,5 +110,17 @@ class DiagnosaController extends Controller
             'sortedHasil' => $sortedHasil,
             'gejalas' => Gejala::all()
         ]);
+    }
+
+    public function destroy(string $id)
+    {
+        $konsultasi = Konsultasi::findOrFail($id);
+
+        // Authorize the request
+        Gate::authorize('delete', $konsultasi);
+
+        $konsultasi->delete();
+
+        return redirect()->route('diagnosa.riwayat')->with('success', 'Riwayat diagnosa berhasil dihapus.');
     }
 }

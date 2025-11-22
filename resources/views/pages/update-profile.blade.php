@@ -30,7 +30,6 @@
         <div class="row">
             <div class="col-lg-6 col-xl-6">
                 <div class="card border">
-
                     <div class="card-header">
                         <div class="row align-items-center">
                             <div class="col">
@@ -40,7 +39,7 @@
                     </div>
 
                     <div class="card-body">
-                        <form action="{{ route('profile.update') }}" method="POST">
+                        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PATCH')
                             <div class="form-group mb-3">
@@ -73,6 +72,16 @@
                                     id="email" name="email" value="{{ old('email', $user->email) }}" placeholder="Masukkan email.." required>
                                 </div>
                                 @error('email')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="foto" class="form-label">Foto Profil</label>
+                                <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" name="foto" placeholder="Masukkan foto.." required>
+                                @error('foto')
                                     <div class="invalid-feedback">
                                         {{ $message }}
                                     </div>

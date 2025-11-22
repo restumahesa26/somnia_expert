@@ -169,7 +169,7 @@
                                 <th>Tanggal</th>
                                 <th>Nama</th>
                                 <th>Gangguan</th>
-                                <th>Tingkat Keparahan</th>
+                                {{--  <th>Tingkat Keparahan</th>  --}}
                                 <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
@@ -179,13 +179,14 @@
                             <tr>
                                 <td>{{ $diagnosis->created_at->format('d M Y') }}</td>
                                 <td>
-                                    {{ $diagnosis->nama_user == '' ? 'Pasien' : $diagnosis->nama_user }}
-                                    @if($diagnosis->is_admin_input)
-                                        <span class="badge bg-info-subtle text-info">Pasien</span>
+                                    @if (Auth::user()->is_admin)
+                                        {{ $diagnosis->nama_pasien == '' ? 'Pasien' : $diagnosis->nama_pasien }}
+                                    @else
+                                        {{ Auth::user()->nama }}
                                     @endif
                                 </td>
                                 <td>{{ $diagnosis->gangguan }}</td>
-                                <td>{{ $diagnosis->severity_level }}</td>
+                                {{--  <td>{{ $diagnosis->severity_level }}</td>  --}}
                                 <td>
                                     <span class="badge bg-{{ $diagnosis->status_color }}-subtle text-{{ $diagnosis->status_color }}">
                                         {{ number_format($diagnosis->percent, 1) }}%

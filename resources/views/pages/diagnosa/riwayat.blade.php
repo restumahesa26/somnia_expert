@@ -9,6 +9,8 @@
     </div>
 </div>
 
+@include('components.flash')
+
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
@@ -16,6 +18,9 @@
                 <thead>
                     <tr>
                         <th>Tanggal</th>
+                        @if (Auth::user()->is_admin)
+                            <th>Nama</th>
+                        @endif
                         <th>Gejala Dipilih</th>
                         <th>Hasil Teratas</th>
                         <th>Persentase</th>
@@ -29,6 +34,9 @@
                         @endphp
                         <tr>
                             <td>{{ \App\Helpers\Helper::formatDate($item->created_at, true) }}</td>
+                            @if (Auth::user()->is_admin)
+                                <td>{{ $item->nama_pasien == '' ? $item->user->nama : $item->nama_pasien }}</td>
+                            @endif
                             <td>{{ count($item->gejala_terpilih) }} Gejala</td>
                             <td>{{ $hasilTeratas['nama'] }}</td>
                             <td>
@@ -40,11 +48,37 @@
                                 <a href="{{ route('diagnosa.show', $item->id) }}" class="btn btn-info btn-sm">
                                     <i class="mdi mdi-eye"></i> Detail
                                 </a>
+                                @if (Auth::user()->is_admin)
+                                <button type="button" class="btn btn-danger btn-sm" onclick="handleDelete({{ $item->id }})">
+                                    <i class="mdi mdi-delete"></i> Hapus
+                                </button>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
+            <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Apakah Anda yakin ingin menghapus riwayat diagnosa ini?
+                        </div>
+                        <div class="modal-footer">
+                            <form id="deleteForm" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-danger">Hapus</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -66,5 +100,14 @@
             ordering: false  // Menambahkan baris ini
         });
     });
+    function handleDelete(id) {
+        const deleteForm = document.getElementById('deleteForm');
+
+        // Mengubah action form ke url: domain.com/diagnosa/{id}
+        deleteForm.action = `{{ url('diagnosa/hapus') }}/${id}`;
+
+        // Tampilkan Modal
+        $('#deleteModal').modal('show');
+    }
 </script>
 @endpush

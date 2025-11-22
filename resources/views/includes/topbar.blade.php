@@ -43,7 +43,7 @@
                 <li class="dropdown notification-list topbar-dropdown">
                     <a class="nav-link dropdown-toggle nav-user me-0" data-bs-toggle="dropdown" href="#"
                         role="button" aria-haspopup="false" aria-expanded="false">
-                        <img src="{{ url('dist/assets/images/users/user-13.jpg') }}" alt="user-image" class="rounded-circle" />
+                        <img src="{{ Auth::user()->foto != '' ? asset('uploads/foto-profil/' . Auth::user()->foto) : asset('dist/assets/images/users/user-23.jpg') }}" alt="user-image" class="rounded-circle" />
                         <span class="pro-user-name ms-1">{{ \App\Helpers\Helper::getFirstName(Auth::user()->nama) }} <i class="mdi mdi-chevron-down"></i></span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end profile-dropdown">
