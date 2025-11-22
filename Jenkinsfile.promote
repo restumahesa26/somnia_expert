@@ -15,7 +15,7 @@ pipeline {
         IMAGE_NAME = "somnia-app-prod-candidate"
         CONTAINER_NAME = "somnia-production"
         PORT = "9090"
-        PATH_SECRETS = "/var/jenkins_home/secrets"
+        PATH_SECRETS = "C:/Users/MUFTI RESTU MAHESA/Documents/Proyek Iseng/Website/my_jenkins/jenkins-secrets"
     }
 
     stages {
