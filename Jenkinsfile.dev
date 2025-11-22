@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+    environment {
+        IMAGE_NAME = "somnia-app-dev"
+        CONTAINER_NAME = "somnia-staging"
+        PORT = "8080"
+        PATH_SECRETS = "/var/jenkins_home/secrets"
+    }
+    stages {
+        stage('Build Image Dev') {
+            steps {
+                script {
+                    echo "🔨 [DEV] Membangun Image Dev..."
+                    sh 'cp .env.example .env'
+                    // Kita pakai tag 'dev' saja biar selalu tertimpa (hemat storage)
+                    sh "docker build -t ${IMAGE_NAME}:dev ."
+                }
+            }
+        }
+        stage('Deploy Staging') {
+            steps {
+                script {
+                    echo "🚀 [DEV] Deploy ke Port ${PORT}..."
+                    sh "docker rm -f ${CONTAINER_NAME} || true"
+                    sh "docker network create laravel-net || true"
+
+                    sh """
+                        docker run -d --name ${CONTAINER_NAME} \
+                        -p ${PORT}:80 \
+                        --network laravel-net \
+                        -v ${PATH_SECRETS}/.env.staging:/var/www/.env \
+                        ${IMAGE_NAME}:dev
+                    """
+
+                    sleep 5
+                    sh "docker exec ${CONTAINER_NAME} php /var/www/artisan migrate --force"
+                }
+            }
+        }
+    }
+}

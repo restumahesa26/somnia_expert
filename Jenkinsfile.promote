@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    // Menu Pilihan Versi
+    parameters {
+        string(
+            name: 'VERSION_TO_DEPLOY',
+            defaultValue: '',
+            description: 'Masukkan Nomor Build yang mau di-deploy (Lihat dari pipeline build)'
+        )
+    }
+
+    environment {
+        // Harus sama dengan nama image di File 2
+        IMAGE_NAME = "somnia-app-prod-candidate"
+        CONTAINER_NAME = "somnia-production"
+        PORT = "9090"
+        PATH_SECRETS = "/var/jenkins_home/secrets"
+    }
+
+    stages {
+        stage('Validate Image') {
+            steps {
+                script {
+                    if (params.VERSION_TO_DEPLOY == '') {
+                        error "⛔ Masukkan nomor versi dulu!"
+                    }
+                    echo "🔍 Mencari Image Versi: ${params.VERSION_TO_DEPLOY}..."
+                    // Cek apakah image ada di laptop
+                    sh "docker inspect ${IMAGE_NAME}:${params.VERSION_TO_DEPLOY} > /dev/null"
+                }
+            }
+        }
+        stage('Deploy Production') {
+            steps {
+                script {
+                    echo "🏆 Deploying Version ${params.VERSION_TO_DEPLOY} to Port ${PORT}..."
+
+                    sh "docker rm -f ${CONTAINER_NAME} || true"
+                    sh "docker network create laravel-net || true"
+
+                    // Jalankan image hasil build sebelumnya
+                    sh """
+                        docker run -d --name ${CONTAINER_NAME} \
+                        -p ${PORT}:80 \
+                        --network laravel-net \
+                        -v ${PATH_SECRETS}/.env.production:/var/www/.env \
+                        ${IMAGE_NAME}:${params.VERSION_TO_DEPLOY}
+                    """
+
+                    sleep 5
+                    sh "docker exec ${CONTAINER_NAME} php /var/www/artisan migrate --force"
+                }
+            }
+        }
+    }
+}

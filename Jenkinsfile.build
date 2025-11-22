@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+    environment {
+        // Kita beri nama beda untuk image production candidate
+        IMAGE_NAME = "somnia-app-prod-candidate"
+    }
+    stages {
+        stage('Prepare Code') {
+            steps {
+                echo "📥 Mengambil kode terbaru..."
+                // Jenkins otomatis checkout dari git di tahap ini
+                sh 'cp .env.example .env'
+            }
+        }
+        stage('Build & Tag') {
+            steps {
+                script {
+                    echo "📦 Membungkus Image Versi: ${env.BUILD_NUMBER}"
+
+                    // Build dengan tag angka unik (1, 2, 3...)
+                    sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} ."
+
+                    // Tag juga sebagai latest
+                    sh "docker tag ${IMAGE_NAME}:${env.BUILD_NUMBER} ${IMAGE_NAME}:latest"
+
+                    echo "✅ Image ${IMAGE_NAME}:${env.BUILD_NUMBER} siap dipromosikan!"
+                }
+            }
+        }
+    }
+}
