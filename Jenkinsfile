@@ -2,102 +2,117 @@ pipeline {
     agent any
 
     parameters {
-        // 1. Menu Pilihan: Mau ngapain?
+        // 1. MENU PILIHAN: Ini yang memisahkan jalur A dan B
         choice(
-            name: 'ACTION',
-            choices: ['Build & Deploy Staging', 'Promote to Production'],
-            description: 'Pilih aksi yang ingin dilakukan'
+            name: 'MODE_OPERASI',
+            choices: ['1. Build & Deploy Staging', '2. Promote to Production'],
+            description: 'Pilih mau update Staging atau update Production?'
         )
 
-        // 2. Input Versi: Mau deploy versi berapa ke Production?
-        // (Hanya diisi kalau memilih Promote)
+        // 2. INPUT VERSI: Hanya diisi kalau kamu pilih menu Promote
         string(
-            name: 'IMAGE_TAG',
+            name: 'VERSION_TO_PROMOTE',
             defaultValue: 'latest',
-            description: 'Masukkan Tag/Nomor Build untuk Production (Contoh: 25 atau latest). Lihat di Riwayat Build.'
+            description: 'Khusus Promote: Masukkan Angka Build Number yang mau dideploy (Contoh: 25)'
         )
     }
 
     environment {
-        IMAGE_NAME = "somnia-app"
-        CONTAINER_DEV = "laravel-staging"
-        CONTAINER_PROD = "laravel-production"
-        PATH_SECRETS = "/var/jenkins_home/secrets"
+        // Variabel ini tetap diambil dari Settingan Job Jenkins (UI)
+        IMAGE_NAME = "${env.PROYEK_NAMA_IMAGE}"
 
-        // Kita gunakan Nomor Build Jenkins sebagai versi (Tag) otomatis
-        // Contoh: somnia-app:1, somnia-app:2, dst.
-        CURRENT_TAG = "${env.BUILD_NUMBER}"
+        CONTAINER_DEV = "${env.PROYEK_NAMA_CONTAINER}-staging"
+        CONTAINER_PROD = "${env.PROYEK_NAMA_CONTAINER}-prod"
+
+        PORT_STAGING = "${env.PROYEK_PORT_STAGING}"
+        PORT_PROD = "${env.PROYEK_PORT_PROD}"
+
+        PATH_SECRETS = "/var/jenkins_home/secrets"
     }
 
     stages {
-        // ============================================================
-        // MODE 1: BUILD & STAGING (Hanya jalan jika Action = Build)
-        // ============================================================
+        // =========================================================
+        // JALUR A: BUILD & STAGING
+        // (Hanya jalan kalau kamu pilih menu 1)
+        // =========================================================
+        stage('Pipeline: Build & Staging') {
+            when { expression { return params.MODE_OPERASI == '1. Build & Deploy Staging' } }
 
-        stage('Build Image') {
-            when { expression { params.ACTION == 'Build & Deploy Staging' } }
             steps {
                 script {
-                    echo "🔨 Membangun Image Versi: ${CURRENT_TAG}..."
+                    echo "🔨 [MODE 1] Memulai Build & Deploy Staging..."
+                    echo "ℹ️  Versi Build ini adalah: ${env.BUILD_NUMBER}"
+
+                    // 1. Copy Env Dummy
                     sh 'cp .env.example .env'
 
-                    // Kita build dengan 2 Tag: Nomor Build (unik) dan Latest
-                    sh "docker build -t ${IMAGE_NAME}:${CURRENT_TAG} ."
-                    sh "docker tag ${IMAGE_NAME}:${CURRENT_TAG} ${IMAGE_NAME}:latest"
-                }
-            }
-        }
+                    // 2. Build Image dengan Tag Angka Unik
+                    sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} ."
+                    // Tag juga sebagai latest
+                    sh "docker tag ${IMAGE_NAME}:${env.BUILD_NUMBER} ${IMAGE_NAME}:latest"
 
-        stage('Deploy to Staging') {
-            when { expression { params.ACTION == 'Build & Deploy Staging' } }
-            steps {
-                script {
-                    echo "🚀 Deploy ke Staging (Versi ${CURRENT_TAG})..."
+                    echo "🚀 Deploy ke Staging Port ${PORT_STAGING}..."
+
+                    // 3. Reset Container Staging
                     sh "docker rm -f ${CONTAINER_DEV} || true"
 
+                    // 4. Jalankan Container Staging
                     sh """
                         docker run -d --name ${CONTAINER_DEV} \
-                        -p 8080:80 \
+                        -p ${PORT_STAGING}:80 \
                         --network laravel-net \
                         -v ${PATH_SECRETS}/.env.staging:/var/www/.env \
-                        ${IMAGE_NAME}:${CURRENT_TAG}
+                        ${IMAGE_NAME}:${env.BUILD_NUMBER}
                     """
 
+                    // 5. Migrasi
                     sleep 5
                     sh "docker exec ${CONTAINER_DEV} php artisan migrate --force"
 
-                    echo "✅ Sukses! Image versi ${CURRENT_TAG} sudah ada di Staging."
-                    echo "Ingat nomor '${CURRENT_TAG}' ini untuk Promote nanti."
+                    echo "✅ Selesai! Ingat nomor versi '${env.BUILD_NUMBER}' ini untuk Promote nanti."
                 }
             }
         }
 
-        // ============================================================
-        // MODE 2: PRODUCTION (Hanya jalan jika Action = Promote)
-        // ============================================================
+        // =========================================================
+        // JALUR B: PROMOTE KE PRODUCTION
+        // (Hanya jalan kalau kamu pilih menu 2)
+        // =========================================================
+        stage('Pipeline: Promote Production') {
+            when { expression { return params.MODE_OPERASI == '2. Promote to Production' } }
 
-        stage('Deploy to Production') {
-            when { expression { params.ACTION == 'Promote to Production' } }
             steps {
                 script {
-                    echo "🏆 Mempromosikan Image Versi: ${params.IMAGE_TAG} ke Production..."
+                    echo "🏆 [MODE 2] Memulai Promote ke Production..."
+                    echo "ℹ️  Mengambil Image Versi: ${params.VERSION_TO_PROMOTE}"
 
-                    // Cek dulu apakah image versinya ada?
-                    // (Command ini akan error kalau image gak ada)
-                    sh "docker inspect ${IMAGE_NAME}:${params.IMAGE_TAG} > /dev/null"
+                    // Cek apakah user lupa isi nomor versi?
+                    if (params.VERSION_TO_PROMOTE == 'latest' || params.VERSION_TO_PROMOTE == '') {
+                        error "⛔ STOP! Kamu harus memasukkan Nomor Build (angka) untuk Promote. Jangan pakai 'latest'."
+                    }
 
+                    // Cek apakah image versi tersebut ada?
+                    sh "docker inspect ${IMAGE_NAME}:${params.VERSION_TO_PROMOTE} > /dev/null"
+
+                    echo "🚀 Deploy ke Production Port ${PORT_PROD}..."
+
+                    // 1. Reset Container Production
                     sh "docker rm -f ${CONTAINER_PROD} || true"
 
+                    // 2. Jalankan Container Production (Pakai versi pilihanmu)
                     sh """
                         docker run -d --name ${CONTAINER_PROD} \
-                        -p 9090:80 \
+                        -p ${PORT_PROD}:80 \
                         --network laravel-net \
                         -v ${PATH_SECRETS}/.env.production:/var/www/.env \
-                        ${IMAGE_NAME}:${params.IMAGE_TAG}
+                        ${IMAGE_NAME}:${params.VERSION_TO_PROMOTE}
                     """
 
+                    // 3. Migrasi
                     sleep 5
                     sh "docker exec ${CONTAINER_PROD} php artisan migrate --force"
+
+                    echo "✅ Sukses! Production sekarang menggunakan versi ${params.VERSION_TO_PROMOTE}"
                 }
             }
         }
