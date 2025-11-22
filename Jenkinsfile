@@ -1,82 +1,104 @@
 pipeline {
     agent any
 
+    parameters {
+        // 1. Menu Pilihan: Mau ngapain?
+        choice(
+            name: 'ACTION',
+            choices: ['Build & Deploy Staging', 'Promote to Production'],
+            description: 'Pilih aksi yang ingin dilakukan'
+        )
+
+        // 2. Input Versi: Mau deploy versi berapa ke Production?
+        // (Hanya diisi kalau memilih Promote)
+        string(
+            name: 'IMAGE_TAG',
+            defaultValue: 'latest',
+            description: 'Masukkan Tag/Nomor Build untuk Production (Contoh: 25 atau latest). Lihat di Riwayat Build.'
+        )
+    }
+
     environment {
         IMAGE_NAME = "somnia-app"
         CONTAINER_DEV = "laravel-staging"
         CONTAINER_PROD = "laravel-production"
-
-        // Ganti path ini sesuai lokasi folder jenkins-secrets di laptopmu!
-        // Contoh: Jika kamu pakai Windows/WSL, pastikan path-nya absolut.
-        // Untuk tutorial ini, kita asumsikan file rahasia ada di folder /tmp/secrets/ di laptop
-        // (Nanti saya jelaskan cara map-nya di bawah kode ini)
         PATH_SECRETS = "/var/jenkins_home/secrets"
+
+        // Kita gunakan Nomor Build Jenkins sebagai versi (Tag) otomatis
+        // Contoh: somnia-app:1, somnia-app:2, dst.
+        CURRENT_TAG = "${env.BUILD_NUMBER}"
     }
 
     stages {
-        // === TAHAP 1: MEMASAK (Build) ===
+        // ============================================================
+        // MODE 1: BUILD & STAGING (Hanya jalan jika Action = Build)
+        // ============================================================
+
         stage('Build Image') {
-            steps {
-                // Kita copy .env.example jadi .env DUMMY dulu supaya Composer gak error saat build
-                sh 'cp .env.example .env'
-                sh "docker build -t ${IMAGE_NAME}:latest ."
-            }
-        }
-
-        // === TAHAP 2: STAGING ===
-        stage('Deploy to Staging') {
-            steps {
-                echo '--- Deploy Staging (Port 8080) ---'
-                sh "docker rm -f ${CONTAINER_DEV} || true"
-
-                // Perhatikan baris -v untuk menyuntikkan .env.staging
-                sh """
-                    docker run -d \
-                    --name ${CONTAINER_DEV} \
-                    -p 8080:80 \
-                    --network laravel-net \
-                    -v ${PATH_SECRETS}/.env.staging:/var/www/.env \
-                    ${IMAGE_NAME}:latest
-                """
-
-                // Tunggu 5 detik biar MySQL siap mental
-                sleep 5
-
-                echo '--- Menjalankan Migrasi Staging ---'
-                // Kita paksa migrate jalan (gunakan --force agar tidak tanya "Are you sure?")
-                sh "docker exec ${CONTAINER_DEV} php artisan migrate --force"
-            }
-        }
-
-        // === TAHAP 3: PROMOTE ===
-        stage('Promote?') {
+            when { expression { params.ACTION == 'Build & Deploy Staging' } }
             steps {
                 script {
-                    input message: 'Staging Aman? Lanjut ke Production?', ok: 'GAS!'
+                    echo "🔨 Membangun Image Versi: ${CURRENT_TAG}..."
+                    sh 'cp .env.example .env'
+
+                    // Kita build dengan 2 Tag: Nomor Build (unik) dan Latest
+                    sh "docker build -t ${IMAGE_NAME}:${CURRENT_TAG} ."
+                    sh "docker tag ${IMAGE_NAME}:${CURRENT_TAG} ${IMAGE_NAME}:latest"
                 }
             }
         }
 
-        // === TAHAP 4: PRODUCTION ===
-        stage('Deploy to Production') {
+        stage('Deploy to Staging') {
+            when { expression { params.ACTION == 'Build & Deploy Staging' } }
             steps {
-                echo '--- Deploy Production (Port 9090) ---'
-                sh "docker rm -f ${CONTAINER_PROD} || true"
+                script {
+                    echo "🚀 Deploy ke Staging (Versi ${CURRENT_TAG})..."
+                    sh "docker rm -f ${CONTAINER_DEV} || true"
 
-                // Suntikkan .env.production
-                sh """
-                    docker run -d \
-                    --name ${CONTAINER_PROD} \
-                    -p 9090:80 \
-                    --network laravel-net \
-                    -v ${PATH_SECRETS}/.env.production:/var/www/.env \
-                    ${IMAGE_NAME}:latest
-                """
+                    sh """
+                        docker run -d --name ${CONTAINER_DEV} \
+                        -p 8080:80 \
+                        --network laravel-net \
+                        -v ${PATH_SECRETS}/.env.staging:/var/www/.env \
+                        ${IMAGE_NAME}:${CURRENT_TAG}
+                    """
 
-                sleep 5
+                    sleep 5
+                    sh "docker exec ${CONTAINER_DEV} php artisan migrate --force"
 
-                echo '--- Menjalankan Migrasi Production ---'
-                sh "docker exec ${CONTAINER_PROD} php artisan migrate --force"
+                    echo "✅ Sukses! Image versi ${CURRENT_TAG} sudah ada di Staging."
+                    echo "Ingat nomor '${CURRENT_TAG}' ini untuk Promote nanti."
+                }
+            }
+        }
+
+        // ============================================================
+        // MODE 2: PRODUCTION (Hanya jalan jika Action = Promote)
+        // ============================================================
+
+        stage('Deploy to Production') {
+            when { expression { params.ACTION == 'Promote to Production' } }
+            steps {
+                script {
+                    echo "🏆 Mempromosikan Image Versi: ${params.IMAGE_TAG} ke Production..."
+
+                    // Cek dulu apakah image versinya ada?
+                    // (Command ini akan error kalau image gak ada)
+                    sh "docker inspect ${IMAGE_NAME}:${params.IMAGE_TAG} > /dev/null"
+
+                    sh "docker rm -f ${CONTAINER_PROD} || true"
+
+                    sh """
+                        docker run -d --name ${CONTAINER_PROD} \
+                        -p 9090:80 \
+                        --network laravel-net \
+                        -v ${PATH_SECRETS}/.env.production:/var/www/.env \
+                        ${IMAGE_NAME}:${params.IMAGE_TAG}
+                    """
+
+                    sleep 5
+                    sh "docker exec ${CONTAINER_PROD} php artisan migrate --force"
+                }
             }
         }
     }
