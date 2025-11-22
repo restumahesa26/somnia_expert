@@ -42,10 +42,11 @@ pipeline {
                     // Jalankan image hasil build sebelumnya
                     sh """
                         docker run -d --name ${CONTAINER_NAME} \
-                        -p ${PORT}:80 \
+                        -p ${PORT}:8000 \
                         --network laravel-net \
-                        -v ${PATH_SECRETS}/.env.production:/var/www/.env \
-                        ${IMAGE_NAME}:${params.VERSION_TO_DEPLOY}
+                        -v "${PATH_SECRETS}/.env.staging":/var/www/.env \
+                        ${IMAGE_NAME}:dev \
+                        php artisan serve --host=0.0.0.0 --port=8000
                     """
 
                     sleep 5
