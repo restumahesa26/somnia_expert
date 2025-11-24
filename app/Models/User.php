@@ -23,6 +23,8 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'username',
+        'umur',
+        'jenis_kelamin',
     ];
 
     /**

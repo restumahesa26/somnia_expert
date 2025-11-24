@@ -35,12 +35,13 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
 
-        $file = $request->file('foto');
-        $namaFile = time() . '_' . Str::random(20) . '.' . $file->getClientOriginalExtension();
-        $tujuanUpload = 'uploads/foto-profil';
-        $file->move(public_path($tujuanUpload), $namaFile);
-
-        $user->foto = $namaFile;
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $namaFile = time() . '_' . Str::random(20) . '.' . $file->getClientOriginalExtension();
+            $tujuanUpload = 'uploads/foto-profil';
+            $file->move(public_path($tujuanUpload), $namaFile);
+            $user->foto = $namaFile;
+        }
 
         $user->save();
 
