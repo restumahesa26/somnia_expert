@@ -15,7 +15,7 @@ pipeline {
         IMAGE_NAME = "somnia-app-prod-candidate"
 
         CONTAINER_NAME = "somnia-production"
-        PORT = "9091" // Port Production
+        PORT = "8082" // Port Production
 
         // Sesuaikan path ini dengan laptop kamu (yang tadi sudah berhasil di Dev)
         // INGAT: Ganti 'MUFTI RESTU MAHESA' jika perlu penanganan spasi, tapi pakai kutip di bawah nanti aman.
