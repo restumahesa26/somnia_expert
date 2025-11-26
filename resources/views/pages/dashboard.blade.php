@@ -23,7 +23,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1">
-                        <h5>Total Diagnosa Sekarang</h5>
+                        <h5>Total Screening Sekarang</h5>
                         <h3 class="mb-0 fs-22 text-dark me-3">{{ $totalDiagnoses }}</h3>
                     </div>
                     <div class="flex-shrink-0">
@@ -106,7 +106,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1">
-                        <h5 class="mb-2">Tanggal Diagnosa Terakhir</h5>
+                        <h5 class="mb-2">Tanggal Screening Terakhir</h5>
                         <h3 class="fs-16">@if($lastDiagnosisDate){{ $lastDiagnosisDate->format('d M Y') }}@else-@endif</h3>
                     </div>
                     <div class="flex-shrink-0">
@@ -157,7 +157,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex align-items-center">
-                    <h5 class="card-title mb-0">Riwayat 10 Diagnosa Terakhir</h5>
+                    <h5 class="card-title mb-0">Riwayat 10 Screening Terakhir</h5>
                 </div>
             </div>
 

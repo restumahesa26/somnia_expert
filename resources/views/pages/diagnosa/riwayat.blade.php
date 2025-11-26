@@ -5,7 +5,7 @@
 @section('content')
 <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
     <div class="flex-grow-1">
-        <h4 class="fs-18 fw-semibold m-0">Riwayat Diagnosa</h4>
+        <h4 class="fs-18 fw-semibold m-0">Riwayat Screening</h4>
     </div>
 </div>
 
@@ -66,7 +66,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            Apakah Anda yakin ingin menghapus riwayat diagnosa ini?
+                            Apakah Anda yakin ingin menghapus riwayat screening ini?
                         </div>
                         <div class="modal-footer">
                             <form id="deleteForm" method="POST">

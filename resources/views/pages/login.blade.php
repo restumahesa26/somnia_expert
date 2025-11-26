@@ -14,7 +14,7 @@
                                     <div class="mb-0 p-0 p-lg-3">
                                         <div class="mb-0 border-0 p-md-4 p-lg-0">
                                             <div class="mb-4 p-0 text-lg-start text-center">
-                                                <h4 class="fs-20">Welcome Back!</h4>
+                                                <h4 class="fs-20">Selamat Datang!</h4>
                                                 <p class="text-muted mb-0">Sign in to continue to SomniaExpert.</p>
                                             </div>
 
@@ -74,7 +74,7 @@
                             <div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
-                                        <p class="prelead mb-2">Discover better sleep with SomniaExpert - Your trusted companion in understanding and managing sleep disorders.</p>
+                                        <p class="prelead mb-2">Discover better sleep with SomniaExpert.</p>
                                         <h4 class="mb-1">Sleep Better</h4>
                                         <p class="mb-0">Live Better</p>
                                     </div>

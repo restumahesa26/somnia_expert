@@ -1,12 +1,12 @@
 @extends('layouts.template')
 @section('title', 'Hasil Diagnosa')
 @section('content')
-<h1 class="h4 mb-3 mt-3">Hasil Diagnosis</h1>
+<h1 class="h4 mb-3 mt-3">Hasil Screening</h1>
 
 @if($konsultasi->is_admin_input && $konsultasi->nama_pasien)
 <div class="card mb-3 shadow-sm">
     <div class="card-body">
-        <h5 class="card-title">Data Pasien</h5>
+        <h5 class="card-title">Data Pengguna</h5>
         <div class="row">
             <div class="col-md-4">
                 <p class="mb-1"><strong>Nama:</strong> {{ $konsultasi->nama_pasien }}</p>
@@ -27,7 +27,7 @@
 
 <!-- Penjelasan Singkat -->
 <div class="alert alert-info">
-    <h6 class="alert-heading fw-bold mb-2">Informasi Diagnosis:</h6>
+    <h6 class="alert-heading fw-bold mb-2">Informasi Screening:</h6>
     <p class="mb-2">Berdasarkan {{ count($konsultasi->gejala_terpilih) }} gejala yang Anda pilih, sistem telah menganalisis kemungkinan gangguan yang dialami menggunakan 2 metode perhitungan:</p>
     <ol class="mb-0">
         <li><strong>Metode VCIRS</strong> - mengukur keterkaitan gejala dengan masing-masing gangguan</li>
@@ -423,12 +423,12 @@
 <!-- Catatan Tambahan -->
 <div class="alert alert-warning">
     <h6 class="alert-heading fw-bold">Catatan Penting!</h6>
-    <p class="mb-0">Hasil diagnosis ini hanya berupa prediksi berdasarkan gejala yang Anda pilih. Untuk diagnosis yang akurat, silakan konsultasikan dengan dokter atau profesional kesehatan.</p>
+    <p class="mb-0">Hasil screening ini hanya berupa gambaran awal kemungkinan gangguan tidur yang anda alami berdasarkan gejala yang Anda pilih. Tahap selanjutnya, silakan konsultasikan dengan profesional kesehatan seperti psikolog/psikiater.</p>
 </div>
 
 <div class="mt-4">
     <a href="{{ route('diagnosa.form') }}" class="btn btn-secondary">
-        <i class="mdi mdi-refresh me-1"></i> Diagnosa Ulang
+        <i class="mdi mdi-refresh me-1"></i> Screening Ulang
     </a>
 </div>
 

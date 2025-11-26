@@ -6,7 +6,7 @@
 <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
     <div class="flex-grow-1">
         <h4 class="fs-18 fw-semibold m-0">Dashboard Admin</h4>
-        <p class="text-muted mb-0">Ringkasan agregat seluruh pengguna & diagnosa.</p>
+        <p class="text-muted mb-0">Ringkasan agregat seluruh pengguna & screening.</p>
     </div>
 </div>
 
@@ -33,7 +33,7 @@
                     <i class="mdi mdi-clipboard-text fs-20 text-info"></i>
                 </div>
                 <div>
-                    <p class="text-muted mb-1">Jumlah Diagnosa</p>
+                    <p class="text-muted mb-1">Jumlah Screening</p>
                     <h4 class="mb-0">{{ number_format($totalDiagnoses) }}</h4>
                 </div>
             </div>
@@ -61,7 +61,7 @@
                     <i class="mdi mdi-calendar-today fs-20 text-success"></i>
                 </div>
                 <div>
-                    <p class="text-muted mb-1">Diagnosa Hari Ini</p>
+                    <p class="text-muted mb-1">Screening Hari Ini</p>
                     <h4 class="mb-0">{{ number_format($todayDiagnoses) }}</h4>
                 </div>
             </div>
@@ -74,7 +74,7 @@
     <div class="col-xl-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Tren Rata-rata Persentase Diagnosa (7 Hari)</h5>
+                <h5 class="card-title mb-0">Tren Rata-rata Persentase Screening (7 Hari)</h5>
             </div>
             <div class="card-body">
                 <div id="trend-chart" class="apex-charts" style="min-height: 280px;"></div>
@@ -97,7 +97,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Riwayat 10 Diagnosa Terbaru (Semua Pengguna)</h5>
+                <h5 class="card-title mb-0">Riwayat 10 Screening Terbaru (Semua Pengguna)</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">

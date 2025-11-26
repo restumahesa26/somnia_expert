@@ -87,7 +87,7 @@
                             <div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
-                                        <p class="prelead mb-2">Join SomniaExpert today and take the first step towards understanding and improving your sleep health.</p>
+                                        <p class="prelead mb-2">Discover better sleep with SomniaExpert.</p>
                                         <h4 class="mb-1">Better Sleep</h4>
                                         <p class="mb-0">Starts Here</p>
                                     </div>
