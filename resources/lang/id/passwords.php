@@ -11,7 +11,8 @@ return [
     | sandi, misalnya token tidak valid atau kata sandi baru tidak valid.
     |
     */
-
+    'email' => 'Alamat Email',
+    'password' => 'Kata Sandi',
     'reset'     => 'Kata sandi Anda sudah direset!',
     'sent'      => 'Kami sudah mengirim surel yang berisi tautan untuk mereset kata sandi Anda!',
     'throttled' => 'Harap tunggu sebelum mencoba lagi.',

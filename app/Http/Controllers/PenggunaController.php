@@ -40,6 +40,8 @@ class PenggunaController extends Controller
             'email'    => ['required','email','max:255','unique:users,email'],
             'is_admin' => ['nullable','boolean'],
             'password' => ['required','string','min:8','confirmed'],
+            'umur' => ['required', 'integer', 'min:0'],
+            'jenis_kelamin' => ['required', 'string', 'in:L,P'],
         ]);
 
         $validated['is_admin'] = (bool) ($validated['is_admin'] ?? false);
@@ -83,6 +85,8 @@ class PenggunaController extends Controller
             'email'    => ['required','email','max:255', Rule::unique('users','email')->ignore($user->id)],
             'is_admin' => ['nullable','boolean'],
             'password' => ['nullable','string','min:8','confirmed'],
+            'umur' => ['required', 'integer', 'min:0'],
+            'jenis_kelamin' => ['required', 'string', 'in:L,P'],
         ]);
 
         $data = collect($validated)->except('password')->toArray();
