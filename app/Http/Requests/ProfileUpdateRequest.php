@@ -26,6 +26,8 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'umur' => ['required', 'integer', 'min:0'],
+            'jenis_kelamin' => ['required', 'string', 'in:L,P'],
             'foto' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg'],
         ];
     }

@@ -79,8 +79,33 @@
                             </div>
 
                             <div class="form-group mb-3">
+                                <label for="umur" class="form-label">Umur</label>
+                                <input type="number" class="form-control @error('umur') is-invalid @enderror"
+                                    id="umur" name="umur" value="{{ old('umur', $user->umur) }}" placeholder="Masukkan umur.." min="0" required>
+                                @error('umur')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
+                                <select class="form-select @error('jenis_kelamin') is-invalid @enderror" id="jenis_kelamin" name="jenis_kelamin" required>
+                                    <option value="" disabled {{ old('jenis_kelamin', $user->jenis_kelamin) ? '' : 'selected' }}>Pilih Jenis Kelamin</option>
+                                    <option value="L" {{ old('jenis_kelamin', $user->jenis_kelamin) == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                    <option value="P" {{ old('jenis_kelamin', $user->jenis_kelamin) == 'P' ? 'selected' : '' }}>Perempuan</option>
+                                </select>
+                                @error('jenis_kelamin')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            <div class="form-group mb-3">
                                 <label for="foto" class="form-label">Foto Profil</label>
-                                <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" name="foto" placeholder="Masukkan foto.." required>
+                                <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" name="foto" placeholder="Masukkan foto.."ph>
                                 @error('foto')
                                     <div class="invalid-feedback">
                                         {{ $message }}
