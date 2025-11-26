@@ -61,24 +61,24 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <h1 class="hero-title fw-bold mb-2">Dashboard Diagnosa Tidur</h1>
+                <h1 class="hero-title fw-bold mb-2">Dashboard Screening Awal Gangguan Tidur</h1>
                 <p class="hero-subtitle text-muted mb-4">
-                    Pantau hasil, lanjutkan diagnosa, dan lihat progres kesehatan tidur Anda.
+                    Pantau hasil, lanjutkan screening, dan lihat progresgambaran awal kesehatan tidur Anda.
                 </p>
                 <div class="d-flex gap-2 flex-wrap">
                     <a href="{{ route('diagnosa.form') }}" class="btn btn-primary px-4" role="button">
-                        <i class="mdi mdi-stethoscope me-1"></i> Mulai Diagnosa
+                        <i class="mdi mdi-stethoscope me-1"></i> Mulai Screening
                     </a>
                     {{--  @if(isset($inProgressSession))
                     <a href="{{ route('diagnosa.continue') }}" class="btn btn-outline-primary px-4" role="button">
-                        <i class="mdi mdi-play me-1"></i> Lanjutkan Diagnosa
+                        <i class="mdi mdi-play me-1"></i> Lanjutkan Screening
                     </a>
                     @endif  --}}
                 </div>
                 <div class="mt-3">
                     <small class="text-muted">
                         <i class="mdi mdi-shield-lock me-1"></i>
-                        Data Anda dienkripsi dan hanya digunakan untuk keperluan diagnosa.
+                        Data Anda dienkripsi dan hanya digunakan untuk keperluan screening.
                     </small>
                 </div>
             </div>
@@ -99,7 +99,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <h6 class="card-title mb-0">Diagnosa Terakhir</h6>
+                        <h6 class="card-title mb-0">Screening Terakhir</h6>
                     </div>
                 </div>
                 <h4 class="mb-0">
@@ -212,7 +212,7 @@
     <div class="col-12">
         <div class="card glass-card">
             <div class="card-header border-0 bg-transparent">
-                <h5 class="card-title mb-0">Riwayat Diagnosa Terkini</h5>
+                <h5 class="card-title mb-0">Riwayat Screening Terkini</h5>
             </div>
             <div class="card-body">
                 @if(isset($recentDiagnoses) && count($recentDiagnoses) > 0)
@@ -258,8 +258,8 @@
                 @else
                 <div class="empty-state">
                     <i class="mdi mdi-clipboard-text empty-state-icon d-block"></i>
-                    <p>Belum ada riwayat diagnosa</p>
-                    <a href="{{ route('diagnosa.form') }}" class="btn btn-primary mt-2">Mulai Diagnosa Pertama</a>
+                    <p>Belum ada riwayat screening</p>
+                    <a href="{{ route('diagnosa.form') }}" class="btn btn-primary mt-2">Mulai Screening Pertama</a>
                 </div>
                 @endif
             </div>
@@ -305,7 +305,7 @@
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Detail Diagnosa</h5>
+                <h5 class="modal-title">Detail Screening</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -328,7 +328,7 @@
                         <tfoot class="table-group-divider">
                             <tr>
                                 <td colspan="2" class="text-end">
-                                    <strong>Hasil Diagnosa:</strong>
+                                    <strong>Hasil Screening:</strong>
                                     {{ $diagnosis->detected_disorder }}
                                     <span class="badge bg-{{ $diagnosis->status_color }}-subtle text-{{ $diagnosis->status_color }} ms-2">
                                         CF: {{ number_format($diagnosis->cf_final * 100, 1) }}%

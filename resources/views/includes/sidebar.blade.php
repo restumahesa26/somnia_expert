@@ -82,16 +82,16 @@
                 <li class="{{ request()->segment(1) === 'diagnosa' ? 'menuitem-active' : '' }}">
                     <a href="#diagnosisMenu" data-bs-toggle="collapse">
                         <i data-feather="command"></i>
-                        <span> Diagnosis </span>
+                        <span> Screening </span>
                         <span class="menu-arrow"></span>
                     </a>
                     <div class="collapse {{ request()->segment(1) === 'diagnosa' ? 'show' : '' }}" id="diagnosisMenu">
                         <ul class="nav-second-level">
                             <li class="{{ request()->segment(1) === 'konsultasi' ? 'menuitem-active' : '' }}">
-                                <a href="{{ route('diagnosa.form') }}" class="tp-link">Diagnosa Baru</a>
+                                <a href="{{ route('diagnosa.form') }}" class="tp-link">Screening Baru</a>
                             </li>
                             <li class="{{ request()->segment(1) === 'diagnosa' && request()->segment(2) === 'detail' ? 'menuitem-active' : '' }}">
-                                <a href="{{ route('diagnosa.riwayat') }}" class="tp-link">Riwayat Diagnosa</a>
+                                <a href="{{ route('diagnosa.riwayat') }}" class="tp-link">Riwayat Screening</a>
                             </li>
                         </ul>
                     </div>

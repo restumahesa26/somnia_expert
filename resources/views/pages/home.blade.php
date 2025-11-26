@@ -140,15 +140,15 @@
                 <!-- Konten Kiri (Teks & CTA) -->
                 <div class="text-center md:text-left">
                     <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight color-text-dark mb-6">
-                        Akhiri <span class="text-blue-500">Gangguan Tidur</span> Anda. Solusi Personal, Diagnosis Akurat.
+                        Akhiri <span class="text-blue-500">Gangguan Tidur</span> Anda. 
                     </h1>
                     <p class="text-lg text-gray-700 mb-10 max-w-xl mx-auto md:mx-0">
-                        Sistem pakar berbasis data klinis yang dirancang untuk mendiagnosa jenis gangguan tidur spesifik pada orang dewasa dan merekomendasikan langkah perbaikan yang terpersonalisasi. Sistem ini menggunakan kombinasi metode VCIRS (Variable-Centered Intelligent Rule System) dan Certainty Factor untuk memberikan hasil diagnosis yang lebih akurat dan terpercaya.
+                        Sistem pakar berbasis data klinis yang dirancang untuk screening awal gangguan tidur pada orang dewasa. Sistem ini menggunakan kombinasi metode VCIRS (Variable-Centered Intelligent Rule System) dan Certainty Factor untuk memperoleh gambaran awal terkait potensi gangguan tidur yang dialami.
                     </p>
 
                     <!-- CTA Primer -->
                     <a href="{{ route('login') }}" class="inline-block py-4 px-10 text-xl color-accent text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:bg-blue-700 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50">
-                        Mulai Diagnosis Sekarang &rarr;
+                        Mulai Screening Sekarang &rarr;
                     </a>
                 </div>
 
@@ -169,44 +169,10 @@
             </div>
         </section>
 
-        <!-- 3. TRUST & KEUNGGULAN (Fokus pada Kredibilitas) -->
-        <section class="py-20 md:py-24 bg-white transition-colors duration-500">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-3xl md:text-4xl font-bold text-center color-text-dark mb-16">Mengapa Memilih SomniaExpert?</h2>
 
-                <div class="grid md:grid-cols-3 gap-8">
-                    <!-- Keunggulan 1: Akurasi -->
-                    <div class="text-center p-6 bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition duration-300">
-                        <div class="w-16 h-16 color-accent text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.504A9.954 9.954 0 0112 21c-3.6 0-6.6-1.5-9-4.5"></path></svg>
-                        </div>
-                        <h3 class="text-xl font-semibold color-text-dark mb-2">Diagnosis Berbasis Pakar</h3>
-                        <p class="text-gray-600">Menggunakan metode VCIRS dan Certainty Factor yang dikembangkan bersama spesialis tidur dan didukung referensi medis terbaru untuk hasil diagnosis yang lebih presisi.</p>
-                    </div>
-
-                    <!-- Keunggulan 2: Personalisasi -->
-                    <div class="text-center p-6 bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition duration-300">
-                        <div class="w-16 h-16 color-accent text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                        </div>
-                        <h3 class="text-xl font-semibold color-text-dark mb-2">Rekomendasi Khusus</h3>
-                        <p class="text-gray-600">Solusi tidur yang unik dan disesuaikan dengan profil kesehatan, gaya hidup, dan hasil diagnosis Anda.</p>
-                    </div>
-
-                    <!-- Keunggulan 3: Privasi -->
-                    <div class="text-center p-6 bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition duration-300">
-                        <div class="w-16 h-16 color-accent text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        </div>
-                        <h3 class="text-xl font-semibold color-text-dark mb-2">Keamanan Data Terjamin</h3>
-                        <p class="text-gray-600">Kami menjamin kerahasiaan dan keamanan penuh data medis serta riwayat diagnosis Anda.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- 4. CARA KERJA (Simple Steps) -->
-        <section class="py-20 md:py-24 bg-blue-50 transition-colors duration-500">
+        <section class="py-20 md:py-24 bg-white transition-colors duration-500">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl md:text-4xl font-bold text-center color-text-dark mb-16">Bagaimana Kami Membantu Anda?</h2>
 
@@ -239,7 +205,7 @@
                     <div class="text-center max-w-xs mx-auto md:mx-0">
                         <div class="w-12 h-12 bg-blue-500 text-white font-bold text-2xl rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">3</div>
                         <h3 class="text-xl font-semibold color-text-dark mb-2">Terima Solusi</h3>
-                        <p class="text-gray-700">Dapatkan hasil diagnosis terperinci dan rekomendasi praktis untuk perbaikan tidur.</p>
+                        <p class="text-gray-700">Dapatkan hasil screening awal terperinci dan rekomendasi praktis untuk perbaikan tidur.</p>
                     </div>
                 </div>
             </div>
@@ -249,11 +215,11 @@
         <section class="py-20 md:py-24 bg-white transition-colors duration-500">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center bg-blue-50 rounded-2xl p-8 md:p-12 shadow-inner transition-colors duration-500">
                 <h2 class="text-3xl font-bold color-text-dark mb-4">Siap Tidur Lebih Nyenyak?</h2>
-                <p class="text-lg text-gray-600 mb-8">Ribuan orang telah mengambil langkah pertama. Jangan biarkan masalah tidur mengganggu kualitas hidup Anda lebih lama lagi.</p>
+                <p class="text-lg text-gray-600 mb-8">Jangan biarkan masalah tidur mengganggu kualitas hidup Anda lebih lama lagi.</p>
 
                 <!-- Final CTA (Warna Biru Tua Primary) -->
                 <a href="{{ route('register') }}" class="inline-block py-4 px-10 text-xl color-primary text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:bg-blue-900 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50">
-                    Daftar dan Dapatkan Diagnosis Anda &rarr;
+                    Daftar dan Mulai Lakukan Screening Awal Gangguan Tidur &rarr;
                 </a>
             </div>
         </section>
