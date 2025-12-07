@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             'email' => 'mufti.restumahesa@gmail.com',
             'password' => Hash::make('password'),
             'is_admin' => false,
+            'umur' => 24,
+            'jenis_kelamin' => 'L',
         ]);
 
         User::create([
@@ -31,6 +33,8 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => Hash::make('password'),
             'is_admin' => true,
+            'umur' => 24,
+            'jenis_kelamin' => 'L',
         ]);
 
         $this->call([
