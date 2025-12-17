@@ -51,7 +51,7 @@
         @endif
 
         <div id="question-container">
-            </div>
+        </div>
 
         <div id="final-answers-container"></div>
 

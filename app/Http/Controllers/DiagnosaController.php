@@ -7,185 +7,210 @@ use Illuminate\Http\Request;
 use App\Models\Gejala;
 use App\Models\Penyakit;
 use App\Models\Konsultasi;
-use App\Services\VCIRS; // Pastikan service ini ada
+use App\Services\VCIRS;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 
 class DiagnosaController extends Controller
 {
     // =========================================================================
-    // BAGIAN 1: API UNTUK DYNAMIC QUESTIONNAIRE (AJAX)
+    // BAGIAN 1: API UNTUK DYNAMIC QUESTIONNAIRE (3-PHASE HYBRID LOGIC)
     // =========================================================================
 
     /**
-     * Memulai sesi diagnosa.
-     * Mengembalikan pertanyaan awal (Gejala Kunci).
+     * FASE I: Screening / Trigger Phase
+     * Menanyakan gejala yang ditandai sebagai Gejala Kunci (is_kunci = true).
      */
     public function ajaxStart()
     {
-        session()->forget(['diagnosa_temp_answers', 'diagnosa_locked_path']);
+        // Reset sesi diagnosa
+        session()->forget(['diagnosa_temp_answers', 'diagnosa_queue']);
 
-        // 1. Ambil Gejala Kunci (Inisiasi Fase I)
-        // Sesuai request: Ambil semua gejala yang bobotnya >= 0.85 (is_kunci = true)
-        // Logic ini otomatis mengambil data dari tabel penyakit_gejala yang sudah di-seed.
-
+        // 1. Ambil Gejala Kunci (Berdasarkan flag is_kunci di DB)
+        // Logic baru: Tidak lagi hardcode bobot >= 0.95, tapi ikut seeder
         $gejalaAwal = DB::table('penyakit_gejala')
             ->join('gejala', 'penyakit_gejala.gejala_id', '=', 'gejala.id')
-            ->where('penyakit_gejala.is_kunci', true) // Ini filter bobot >= 0.85
+            ->where('penyakit_gejala.is_kunci', true) 
             ->select('gejala.id', 'gejala.kode_gejala', 'gejala.nama_gejala')
-            ->distinct() // Menghindari duplikat jika 1 gejala kunci dipakai 2 penyakit
+            ->distinct()
             ->orderBy('gejala.kode_gejala')
             ->get();
-
+        
         return response()->json([
             'status' => 'next',
             'gejala' => $gejalaAwal,
-            'message' => 'Silakan jawab pertanyaan screening awal berikut.'
+            'message' => 'Fase I: Screening Awal. Silakan jawab pertanyaan berikut.'
         ]);
     }
 
+    /**
+     * FASE II: Konfirmasi & Percabangan (Branching Phase)
+     * Menentukan Scenario A, B, atau C berdasarkan jawaban Fase I.
+     */
     public function ajaxNext(Request $request)
     {
+        // 1. Simpan jawaban baru ke sesi
         $jawabanBaru = $request->input('jawaban', []);
         $currentAnswers = session('diagnosa_temp_answers', []);
-        $allAnswers = $currentAnswers + $jawabanBaru;
+        $allAnswers = $currentAnswers + $jawabanBaru; // Merge jawaban
         session(['diagnosa_temp_answers' => $allAnswers]);
 
-        // ============================================================
-        // 1. AMBIL RULES DARI DB (DINAMIS)
-        // ============================================================
-        $rulesRaw = DB::table('penyakit_gejala')
-            ->join('penyakit', 'penyakit_gejala.penyakit_id', '=', 'penyakit.id')
-            ->join('gejala', 'penyakit_gejala.gejala_id', '=', 'gejala.id')
-            ->where('penyakit_gejala.is_kunci', true)
-            ->select('penyakit.kode_penyakit', 'gejala.kode_gejala')
-            ->get();
+        // 2. Cek apakah kita sudah punya "Antrian Pertanyaan" (Queue) di sesi
+        // Jika SUDAH, berarti kita sedang berada di tengah-tengah Fase II
+        if (session()->has('diagnosa_queue')) {
+            return $this->processQueue($allAnswers);
+        }
 
-        $rules = $rulesRaw->mapToGroups(function ($item) {
-            return [$item->kode_penyakit => $item->kode_gejala];
-        })->map(function ($group) {
-            return $group->toArray();
-        })->toArray();
+        // 3. Jika BELUM, berarti ini baru selesai Fase I. Kita harus tentukan Skenario.
+        // Logika Penentuan Skenario
+        
+        // Ambil definisi "Trigger" (Gejala Kunci)
+        $triggers = DB::table('penyakit_gejala')
+            ->select('penyakit_id', 'gejala_id')
+            ->where('is_kunci', true) // UPDATE: Pakai is_kunci
+            ->get()
+            ->groupBy('penyakit_id');
 
-        // ============================================================
-        // 2. DETEKSI SEMUA PENYAKIT (MULTI-DETECTION)
-        // ============================================================
+        $detectedPenyakitIds = [];
 
-        $detectedPenyakitKodes = []; // Array untuk menampung semua penyakit yang "kena"
-
-        foreach ($rules as $kodePenyakit => $pemicuGejalas) {
-            // Ambil ID Gejala pemicu
-            $idsPemicu = Gejala::whereIn('kode_gejala', $pemicuGejalas)->pluck('id')->toArray();
-
-            // Cek apakah ada jawaban YA (1) pada salah satu pemicu
-            foreach ($idsPemicu as $id) {
-                if (isset($allAnswers[$id]) && $allAnswers[$id] == 1) {
-                    // Jika ketemu, masukkan ke daftar terdeteksi
-                    $detectedPenyakitKodes[] = $kodePenyakit;
-                    break; // Lanjut ke penyakit berikutnya (tidak perlu cek pemicu lain di penyakit yg sama)
+        foreach ($triggers as $penyakitId => $items) {
+            // Logic: Penyakit dianggap 'suspect' jika SEMUA atau SEBAGIAN BESAR key symptoms terpenuhi?
+            // Biasanya cukup 1 atau beberapa. Mari kita pakai threshold minimal 1 key symptom = suspect.
+            // Atau lebih ketat: minimal 50% dari key symptoms? 
+            // Untuk sensitivitas tinggi (screening), minimal 1 "Ya" sudah cukup memicu investigasi lanjut.
+            foreach ($items as $item) {
+                if (isset($allAnswers[$item->gejala_id]) && $allAnswers[$item->gejala_id] == 1) {
+                    $detectedPenyakitIds[] = $penyakitId;
+                    break; 
                 }
             }
         }
+        
+        $detectedPenyakitIds = array_unique($detectedPenyakitIds);
+        $countDetected = count($detectedPenyakitIds);
+        
+        $queueIds = [];
+        $message = '';
 
-        // Hapus duplikat (jaga-jaga)
-        $detectedPenyakitKodes = array_unique($detectedPenyakitKodes);
+        // Skenario 1: DIAGNOSIS SPESIFIK (Scenario A)
+        // Hanya 1 penyakit terdeteksi. Only ask specific symptoms defined for Phase 2.
+        if ($countDetected == 1) {
+            $penyakitId = $detectedPenyakitIds[0];
+            $namaPenyakit = Penyakit::find($penyakitId)->nama_penyakit;
+            $message = "Terindikasi " . $namaPenyakit . ". Melakukan konfirmasi detail.";
 
-        // ============================================================
-        // 3. AKSI: AMBIL GEJALA DARI SEMUA PENYAKIT TERDETEKSI
-        // ============================================================
+            // Ambil gejala spesifik (Bobot >= 0.90) TAPI bukan kunci (karena kunci sudah ditanya)
+            $queueIds = DB::table('penyakit_gejala')
+                ->where('penyakit_id', $penyakitId)
+                ->where('bobot', '>=', 0.90) 
+                ->where('is_kunci', false) // Hindari redundansi (meski difilter nanti)
+                ->pluck('gejala_id')
+                ->toArray();
+        } 
+        // Skenario 2: KOMORBIDITAS (Scenario B)
+        // Lebih dari 1 penyakit terdeteksi.
+        elseif ($countDetected > 1) {
+            $message = "Terdeteksi indikasi kompleks (Komorbiditas). Melakukan pemeriksaan menyeluruh.";
 
-        if (!empty($detectedPenyakitKodes)) {
+            // 1. Ambil gejala DETAIL (>= 0.90) dari penyakit-penyakit yang terdeteksi
+            $specificIds = DB::table('penyakit_gejala')
+                ->whereIn('penyakit_id', $detectedPenyakitIds)
+                ->where('bobot', '>=', 0.90)
+                ->where('is_kunci', false)
+                ->pluck('gejala_id')
+                ->toArray();
 
-            // Ambil ID Penyakit berdasarkan kode-kode yang terdeteksi
-            $penyakitIds = Penyakit::whereIn('kode_penyakit', $detectedPenyakitKodes)->pluck('id');
+            // 2. Ambil gejala TUMPANG TINDIH / CROSS-CHECK (0.80 - 0.85)
+            $overlapIds = DB::table('penyakit_gejala')
+                ->whereBetween('bobot', [0.80, 0.89]) 
+                ->pluck('gejala_id')
+                ->toArray();
 
-            // Ambil SEMUA gejala dari SEMUA penyakit yang terdeteksi
-            $allRelevantGejalaIds = DB::table('penyakit_gejala')
-                                ->whereIn('penyakit_id', $penyakitIds)
-                                ->pluck('gejala_id') // Ambil ID gejalanya saja
-                                ->unique()           // Hindari duplikat (misal G11 ada di P01 dan P03)
-                                ->toArray();
+            $queueIds = array_unique(array_merge($specificIds, $overlapIds));
+        }
+        // Skenario 3: SEHAT / DIAGNOSA NEGATIF (Scenario C)
+        // Tidak ada trigger yang terpenuhi.
+        else {
+            $message = "Tidak ada indikasi gejala berat. Melakukan pemeriksaan gejala umum.";
 
-            // Filter: Hanya ambil yang BELUM dijawab
-            // (Kita buang gejala yang ID-nya sudah ada di $allAnswers)
-            $unansweredIds = array_diff($allRelevantGejalaIds, array_keys($allAnswers));
-
-            // Jika semua pertanyaan dari penyakit-penyakit itu sudah habis terjawab -> FINISH
-            if (empty($unansweredIds)) {
-                return response()->json(['status' => 'finish']);
-            }
-
-            // Ambil detail pertanyaan berikutnya dari DB
-            // Limit 5 pertanyaan per batch agar user tidak kaget jika banyak sekali
-            $nextQuestions = Gejala::whereIn('id', $unansweredIds)
-                                    ->orderBy('kode_gejala')
-                                    ->take(10) // Opsional: Batasi 10 pertanyaan per halaman
-                                    ->get(['id', 'kode_gejala', 'nama_gejala']);
-
-            // Buat pesan dinamis
-            $namaPenyakitStr = Penyakit::whereIn('id', $penyakitIds)->pluck('nama_penyakit')->join(', ');
-
-            return response()->json([
-                'status' => 'next',
-                'gejala' => $nextQuestions,
-                'message' => 'Terdeteksi indikasi: ' . $namaPenyakitStr . '. Mohon lengkapi detail berikut.'
-            ]);
+            // Tampilkan gejala umum/overlap (0.80 - 0.85) untuk memastikan
+            $queueIds = DB::table('penyakit_gejala')
+                ->whereBetween('bobot', [0.80, 0.89])
+                ->pluck('gejala_id')
+                ->unique()
+                ->toArray();
         }
 
-        // Jika user menjawab TIDAK untuk semua gejala kunci awal -> FINISH
+        // Filter: Hapus ID yang sudah dijawab (dari Phase 1)
+        $unansweredQueue = array_diff($queueIds, array_keys($allAnswers));
+        
+        // Simpan antrian ke sesi agar konsisten
+        session(['diagnosa_queue' => array_values($unansweredQueue)]);
+        
+        // Panggil fungsi processing queue
+        return $this->processQueue($allAnswers, $message);
+    }
+
+    /**
+     * Memproses antrian pertanyaan dan mengirim batch berikutnya ke User.
+     */
+    private function processQueue($allAnswers, $customMessage = null)
+    {
+        $queue = session('diagnosa_queue', []);
+
+        // Filter ulang (just in case)
+        $queue = array_values(array_diff($queue, array_keys($allAnswers)));
+        session(['diagnosa_queue' => $queue]); // Update sesi
+
+        if (empty($queue)) {
+            return response()->json(['status' => 'finish']);
+        }
+
+        // Ambil batch pertanyaan (misal 5 atau 10 sekaligus)
+        $nextBatchIds = array_slice($queue, 0, 10);
+        
+        $questions = Gejala::whereIn('id', $nextBatchIds)
+            ->orderBy('kode_gejala') // Urutkan supaya rapi
+            ->get(['id', 'kode_gejala', 'nama_gejala']);
+
         return response()->json([
-            'status' => 'finish',
-            'reason' => 'No trigger met'
+            'status' => 'next',
+            'gejala' => $questions,
+            'message' => $customMessage ?? 'Silakan lengkapi pertanyaan detail berikut.'
         ]);
     }
 
     // =========================================================================
-    // BAGIAN 2: VIEW DAN FINAL PROCESSING (EXISTING LOGIC)
+    // BAGIAN 2: VIEW DAN FINAL PROCESSING
     // =========================================================================
 
     public function form()
     {
-        // Kita tetap butuh variabel isAdmin untuk view
         $isAdmin = auth()->user() && auth()->user()->is_admin;
-
-        // CATATAN: Kita tidak kirim $gejalas lagi karena akan diload via AJAX
         return view('pages.diagnosa.form', compact('isAdmin'));
     }
 
-    /**
-     * Proses Final (Simpan ke DB).
-     * Menerima array ID gejala yang dijawab "YA" dari frontend setelah sesi tanya jawab selesai.
-     */
     public function proses(Request $request, VCIRS $vcirs)
     {
         $request->validate([
-            'gejala' => 'required|array', // Array ID gejala yang dijawab YA
+            'gejala' => 'required|array',
             'gejala.*' => 'integer',
-            'is_admin_input' => ['sometimes','boolean'],
-            'nama_pasien'    => ['nullable','required_if:is_admin_input,true','string','max:255'],
-            'umur'           => ['nullable','required_if:is_admin_input,true','integer','min:1','max:150'],
-            'jenis_kelamin'  => ['nullable','required_if:is_admin_input,true','in:L,P'],
         ]);
 
-        // Ambil ID gejala yang dipilih (User menjawab YA)
-        $ids = collect($request->input('gejala', []))
-            ->map(fn($v) => (int)$v)
-            ->unique()
-            ->values()
-            ->all();
+        $ids = collect($request->input('gejala', []))->map(fn($v)=>(int)$v)->unique()->values()->all();
 
-        // Panggil Service VCIRS untuk perhitungan detail (sesuai file VCIRS.php kamu)
+        // Hitung VCIRS
         $hasil = $vcirs->diagnose($ids);
+        
+        // Urutkan
+        $sortedHasil = collect($hasil)->sortByDesc('percent');
 
-        // Urutkan hasil
-        $sortedHasil = collect($hasil)->sortByDesc(function($row) {
-            return $row['percent'];
-        });
+        // Note: Untuk Scenario C (Sehat), biasanya percent akan sangat kecil atau 0.
+        // Kita tetap simpan hasilnya.
 
-        // Siapkan data untuk disimpan
         $konsultasiData = [
             'user_id' => auth()->id(),
-            'gejala_terpilih' => $ids, // Simpan ID gejala yang dijawab YA
+            'gejala_terpilih' => $ids,
             'is_admin_input' => auth()->check() && auth()->user()->is_admin && $request->has('is_admin_input'),
             'hasil' => $sortedHasil->map(function($row){
                 return [
@@ -197,18 +222,14 @@ class DiagnosaController extends Controller
             })->values()->all(),
         ];
 
-        // Tambah data pasien jika input admin
         if ($konsultasiData['is_admin_input']) {
             $konsultasiData['nama_pasien'] = $request->input('nama_pasien');
             $konsultasiData['umur'] = $request->input('umur');
             $konsultasiData['jenis_kelamin'] = $request->input('jenis_kelamin');
         }
 
-        // Simpan ke database
         $k = Konsultasi::create($konsultasiData);
-
-        // Hapus sesi sementara
-        session()->forget('diagnosa_temp_answers');
+        session()->forget(['diagnosa_temp_answers', 'diagnosa_queue']);
 
         return redirect()->route('diagnosa.show', $k->id);
     }
@@ -216,13 +237,10 @@ class DiagnosaController extends Controller
     public function riwayat()
     {
         $query = Konsultasi::query();
-
         if (auth()->check() && !auth()->user()->is_admin) {
             $query->where('user_id', auth()->id());
         }
-
         $riwayat = $query->latest()->get();
-
         return view('pages.diagnosa.riwayat', compact('riwayat'));
     }
 
@@ -231,10 +249,8 @@ class DiagnosaController extends Controller
         $konsultasi = Konsultasi::findOrFail($id);
         Gate::authorize('view', $konsultasi);
 
-        // Hitung ulang untuk tampilan detail
         $vcirs = new VCIRS();
         $hasil = $vcirs->diagnose($konsultasi->gejala_terpilih);
-
         $sortedHasil = collect($hasil)->sortByDesc('percent');
 
         return view('pages.diagnosa.hasil', [
@@ -250,7 +266,6 @@ class DiagnosaController extends Controller
         $konsultasi = Konsultasi::findOrFail($id);
         Gate::authorize('delete', $konsultasi);
         $konsultasi->delete();
-
         return redirect()->route('diagnosa.riwayat')->with('success', 'Riwayat diagnosa berhasil dihapus.');
     }
 }
