@@ -1,63 +1,48 @@
 @extends('layouts.template')
-@section('title', 'Diagnosa Baru')
+@section('title', 'Diagnosa Interaktif')
+
 @section('content')
-<div class="diagnosa-container mt-3">
-    <!-- Progress Bar -->
-    <div class="progress-container mb-4">
-        <div class="progress" style="height: 10px;">
-            <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
-        </div>
-        <div class="text-center mt-2">
-            <span class="badge bg-primary" id="progressText">0 dari {{ count($gejalas) }} gejala</span>
-        </div>
+<div class="diagnosa-container mt-4">
+
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-primary"><i class="mdi mdi-doctor me-2"></i>Konsultasi Gangguan Tidur</h2>
+        <p class="text-muted">Jawablah pertanyaan berikut sesuai dengan kondisi yang Anda alami.</p>
     </div>
 
-    <!-- Header Section -->
-    <div class="text-center mb-4">
-        <h1 class="h3 mb-2">Konsultasi Gangguan Tidur</h1>
-        <p class="text-muted">Pilih gejala yang Anda alami saat ini dengan teliti</p>
+    <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Menganalisa jawaban Anda...</p>
     </div>
 
-    <!-- Main Form -->
     <form method="post" action="{{ route('diagnosa.proses') }}" id="diagnosaForm">
         @csrf
 
         @if($isAdmin)
-        <div class="card mb-4 shadow-sm">
+        <div class="card mb-4 shadow-sm border-0 bg-light">
             <div class="card-body">
-                <h4 class="mb-3">Data Pasien</h4>
+                <h5 class="card-title mb-3"><i class="mdi mdi-account-details me-1"></i> Data Pasien</h5>
                 <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="is_admin_input" name="is_admin_input" value="1" @if(old('is_admin_input') == 1) checked @endif>
-                    <label class="form-check-label" for="is_admin_input">Input data pasien</label>
+                    <input type="checkbox" class="form-check-input" id="is_admin_input" name="is_admin_input" value="1">
+                    <label class="form-check-label" for="is_admin_input">Input data manual</label>
                 </div>
-                <div id="patientData" style="@if(old('is_admin_input') == true) display: block @else display: none @endif">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="nama_pasien" class="form-label">Nama Pasien</label>
-                            <input type="text" class="form-control @error('nama_pasien') is-invalid @enderror"
-                                id="nama_pasien" name="nama_pasien" value="{{ old('nama_pasien') }}" placeholder="Masukkan nama pasien..">
-                            @error('nama_pasien')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                <div id="patientData" style="display: none;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Pasien</label>
+                            <input type="text" class="form-control" name="nama_pasien" placeholder="Nama lengkap">
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="umur" class="form-label">Umur</label>
-                            <input type="number" class="form-control @error('umur') is-invalid @enderror"
-                                id="umur" name="umur" value="{{ old('umur') }}" min="1" max="150" placeholder="Masukkan umur..">
-                            @error('umur')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="col-md-3">
+                            <label class="form-label">Umur</label>
+                            <input type="number" class="form-control" name="umur" placeholder="Tahun">
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
-                            <select class="form-select @error('jenis_kelamin') is-invalid @enderror"
-                                id="jenis_kelamin" name="jenis_kelamin" required>
-                                <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                                <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                        <div class="col-md-3">
+                            <label class="form-label">Jenis Kelamin</label>
+                            <select class="form-select" name="jenis_kelamin">
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
                             </select>
-                            @error('jenis_kelamin')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
                     </div>
                 </div>
@@ -65,294 +50,222 @@
         </div>
         @endif
 
-        <div class="row justify-content-center">
-            <div class="col-12">
-                <!-- Gejala List -->
-                @foreach($gejalas as $g)
-                <div class="gejala-item mb-3">
-                    <div class="card shadow-sm card-hover" style="border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1rem; background-color: #fff;">
-                        <div class="card-body">
-                            <div class="gejala-options">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="gejala-number me-3">
-                                        <span class="badge bg-primary">{{ $loop->iteration }}</span>
-                                    </div>
-                                    <div>
-                                        <div class="mb-1">
-                                            <span class="badge bg-light text-primary">{{ $g->kode_gejala }}</span>
-                                        </div>
-                                        <span class="gejala-text">{{ $g->nama_gejala }}</span>
-                                    </div>
-                                </div>
-                                <div class="gejala-buttons mt-2">
-                                    <div class="btn-group w-100" role="group" aria-label="Pilihan gejala">
-                                        <input type="checkbox"
-                                            class="btn-check"
-                                            name="gejala[]"
-                                            value="{{ $g->id }}"
-                                            id="g{{ $g->id }}_ya"
-                                            onchange="handleYesAnswer({{ $g->id }})"
-                                            style="display: none;">
-                                        <label class="btn btn-outline-success w-50" for="g{{ $g->id }}_ya">Ya</label>
+        <div id="question-container">
+            </div>
 
-                                        <input type="radio"
-                                            class="btn-check"
-                                            name="answer_{{ $g->id }}"
-                                            value="0"
-                                            id="g{{ $g->id }}_tidak"
-                                            onchange="handleNoAnswer({{ $g->id }})">
-                                        <label class="btn btn-outline-danger w-50" for="g{{ $g->id }}_tidak">Tidak</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
+        <div id="final-answers-container"></div>
 
-                <!-- Submit Button -->
-                <div class="text-center mt-4 mb-4">
-                    <button type="submit" class="btn btn-primary btn-lg px-4" id="submitBtn" disabled>
-                        <i class="mdi mdi-stethoscope me-1"></i>
-                        Mulai Diagnosis
-                    </button>
-                </div>@push('styles')
+        <div class="text-center mt-4 mb-5" id="action-buttons">
+            <button type="button" class="btn btn-primary btn-lg px-5 rounded-pill shadow" id="btnLanjut" onclick="submitBatch()">
+                Lanjut <i class="mdi mdi-arrow-right ms-1"></i>
+            </button>
+        </div>
+    </form>
+</div>
+@endsection
+
+@push('styles')
 <style>
-    .diagnosa-container {
-        max-width: 800px;
-        margin: 0 auto;
-    }
+    .diagnosa-container { max-width: 700px; margin: 0 auto; }
 
-    .progress-container {
-        background: white;
-        padding: 1rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .progress {
-        border-radius: 10px;
-        background-color: #e9ecef;
-    }
-
-    .progress-bar {
-        transition: width 0.3s ease;
-        border-radius: 10px;
-    }
-
-    .card-hover {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        border: 1px solid rgba(0,0,0,0.08);
-    }
-
-    .card-hover:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-    }
-
-    .gejala-item .card {
-        border-radius: 8px;
-    }
-
-    .gejala-item .form-check {
-        margin-bottom: 0;
-    }
-
-    .gejala-text {
-        color: #495057;
-        font-size: 1rem;
-        display: block;
-        line-height: 1.5;
-    }
-
-    .gejala-number .badge {
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.9rem;
-    }
-
-    .gejala-options {
-        position: relative;
-    }
-
-    .gejala-answered .gejala-text {
-        font-weight: 500;
-    }
-
-    .gejala-answered[data-answered="1"] .gejala-text {
-        color: #198754;
-    }
-
-    .gejala-answered[data-answered="0"] .gejala-text {
-        color: #dc3545;
-    }
-
-    .btn-group {
-        gap: 8px;
-    }
-
-    .btn-check + .btn {
-        flex: 1;
-        padding: 8px 16px;
-        border-radius: 6px !important;
-    }
-
-    .btn-outline-success:hover {
-        background-color: #19875420;
-        color: #198754;
-    }
-
-    .btn-outline-danger:hover {
-        background-color: #dc354520;
-        color: #dc3545;
-    }
-
-    /* Animation for cards */
-    .gejala-item {
+    /* Animasi Kartu */
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
         opacity: 0;
         transform: translateY(20px);
-        animation: fadeInUp 0.5s forwards;
     }
 
     @keyframes fadeInUp {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Staggered animation delays */
-    .gejala-item:nth-child(1) { animation-delay: 0.1s; }
-    .gejala-item:nth-child(2) { animation-delay: 0.2s; }
-    .gejala-item:nth-child(3) { animation-delay: 0.3s; }
-    .gejala-item:nth-child(4) { animation-delay: 0.4s; }
-    .gejala-item:nth-child(5) { animation-delay: 0.5s; }
-    .gejala-item:nth-child(6) { animation-delay: 0.6s; }
-    .gejala-item:nth-child(7) { animation-delay: 0.7s; }
-    .gejala-item:nth-child(8) { animation-delay: 0.8s; }
-    .gejala-item:nth-child(9) { animation-delay: 0.9s; }
-    .gejala-item:nth-child(10) { animation-delay: 1s; }
-    .gejala-item:nth-child(n+11) { animation-delay: 1.1s; }
+    /* Style Pilihan Ya/Tidak */
+    .btn-group-custom .btn-check:checked + .btn-outline-success {
+        background-color: #198754; color: white; box-shadow: 0 4px 6px rgba(25, 135, 84, 0.3);
+    }
+    .btn-group-custom .btn-check:checked + .btn-outline-danger {
+        background-color: #dc3545; color: white; box-shadow: 0 4px 6px rgba(220, 53, 69, 0.3);
+    }
+    .card-question {
+        border-radius: 15px;
+        transition: all 0.3s;
+        border: 1px solid #eee;
+    }
+    .card-question:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transform: translateY(-2px);
+    }
 </style>
 @endpush
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const isAdminInput = document.getElementById('is_admin_input');
-        const patientData = document.getElementById('patientData');
+    // Variabel Global
+    let currentBatchIds = []; // Menyimpan ID gejala yang sedang tampil
+    let allYesAnswers = [];   // Menyimpan semua ID gejala yang dijawab 'YA'
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        if (isAdminInput) {
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Tampilkan pertanyaan awal saat halaman dimuat
+        loadQuestions('{{ route("diagnosa.start") }}', {});
+
+        // Logic toggle form admin
+        const isAdminInput = document.getElementById('is_admin_input');
+        if(isAdminInput){
             isAdminInput.addEventListener('change', function() {
-                patientData.style.display = this.checked ? 'block' : 'none';
+                document.getElementById('patientData').style.display = this.checked ? 'block' : 'none';
             });
         }
-
-        updateProgress();
-        setupForm();
     });
 
-    function setupForm() {
-        const form = document.getElementById('diagnosaForm');
+    // Fungsi Utama: Mengambil Pertanyaan dari Server
+    function loadQuestions(url, dataPayload) {
+        showLoading(true);
 
-        // Handle form submission
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify(dataPayload)
+        })
+        .then(response => response.json())
+        .then(result => {
+            showLoading(false);
 
-            // Validasi semua gejala harus dijawab
-            const totalGejala = document.querySelectorAll('.gejala-item').length;
-            const answeredGejala = document.querySelectorAll('.gejala-answered').length;
-
-            if (answeredGejala < totalGejala) {
-                alert('Mohon jawab semua gejala sebelum melanjutkan diagnosis');
-
-                // Scroll ke gejala pertama yang belum dijawab
-                const firstUnanswered = Array.from(document.querySelectorAll('.gejala-item'))
-                    .find(item => !item.querySelector('.gejala-answered'));
-
-                if (firstUnanswered) {
-                    const offset = 150;
-                    const itemTop = firstUnanswered.offsetTop - offset;
-                    window.scrollTo({
-                        top: itemTop,
-                        behavior: 'smooth'
-                    });
-                }
-                return;
+            if (result.status === 'finish') {
+                finishDiagnosa();
+            } else {
+                renderQuestions(result.gejala);
             }
-
-            // Submit form jika semua gejala sudah dijawab
-            form.submit();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showLoading(false);
+            alert('Terjadi kesalahan koneksi. Silakan coba lagi.');
         });
     }
 
-    function handleNoAnswer(gejalaId) {
-        // Uncheck the "Ya" checkbox when "Tidak" is selected
-        const yaCheckbox = document.getElementById(`g${gejalaId}_ya`);
-        if (yaCheckbox) {
-            yaCheckbox.checked = false;
+    // Fungsi Render: Menampilkan Kartu Pertanyaan ke HTML
+    function renderQuestions(gejalas) {
+        const container = document.getElementById('question-container');
+        container.innerHTML = ''; // Bersihkan pertanyaan lama
+        currentBatchIds = [];     // Reset ID batch ini
+
+        // Jika tidak ada gejala yang dikembalikan (error handling)
+        if(gejalas.length === 0) {
+            finishDiagnosa();
+            return;
         }
-        updateProgress(gejalaId, false);
+
+        gejalas.forEach((g, index) => {
+            currentBatchIds.push(g.id);
+
+            // HTML Template untuk setiap kartu pertanyaan
+            const html = `
+                <div class="card card-question mb-3 fade-in-up" style="animation-delay: ${index * 0.1}s">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary me-2">${g.kode_gejala}</span>
+                            <h5 class="card-title mb-0 fs-6 text-dark">${g.nama_gejala}</h5>
+                        </div>
+                        <div class="btn-group w-100 btn-group-custom" role="group">
+                            <input type="radio" class="btn-check" name="temp_ans_${g.id}" id="yes_${g.id}" value="1">
+                            <label class="btn btn-outline-success py-2" for="yes_${g.id}">
+                                <i class="mdi mdi-check"></i> Ya
+                            </label>
+
+                            <input type="radio" class="btn-check" name="temp_ans_${g.id}" id="no_${g.id}" value="0">
+                            <label class="btn btn-outline-danger py-2" for="no_${g.id}">
+                                <i class="mdi mdi-close"></i> Tidak
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+
+        // Scroll smooth ke atas container pertanyaan
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function handleYesAnswer(gejalaId) {
-        // Uncheck the "Tidak" radio when "Ya" is selected
-        const tidakRadio = document.getElementById(`g${gejalaId}_tidak`);
-        if (tidakRadio) {
-            tidakRadio.checked = false;
-        }
-        updateProgress(gejalaId, true);
-    }
+    // Fungsi Submit Batch (Tombol Lanjut)
+    function submitBatch() {
+        let currentAnswers = {};
+        let isComplete = true;
 
-    function updateProgress(gejalaId, isYes) {
-        if (gejalaId) {  // Only update specific item if gejalaId is provided
-            // Update gejala item appearance
-            const gejalaItem = document.querySelector(`#g${gejalaId}_ya`).closest('.gejala-item');
-            const gejalaOptions = gejalaItem.querySelector('.gejala-options');
+        // Validasi: Cek apakah semua pertanyaan di layar sudah dijawab
+        currentBatchIds.forEach(id => {
+            const yes = document.getElementById(`yes_${id}`);
+            const no = document.getElementById(`no_${id}`);
 
-            gejalaOptions.classList.add('gejala-answered');
-            gejalaOptions.setAttribute('data-answered', isYes ? '1' : '0');
-        }
+            if (!yes.checked && !no.checked) {
+                isComplete = false;
+                // Beri highlight merah sebentar (opsional)
+                yes.closest('.card').style.borderColor = 'red';
+            } else {
+                yes.closest('.card').style.borderColor = '#eee';
 
-        // Count answered questions
-        const totalGejala = document.querySelectorAll('.gejala-item').length;
-        const answeredGejala = document.querySelectorAll('.gejala-answered').length;
+                // Simpan jawaban (1 atau 0)
+                const val = yes.checked ? 1 : 0;
+                currentAnswers[id] = val;
 
-        // Update progress bar and submit button
-        const percentage = (answeredGejala / totalGejala) * 100;
-        const progressBar = document.getElementById('progressBar');
-        const progressText = document.getElementById('progressText');
-        const submitBtn = document.getElementById('submitBtn');
-
-        progressBar.style.width = percentage + '%';
-        progressText.textContent = answeredGejala + ' dari ' + totalGejala + ' gejala';
-
-        // Enable submit button only if all questions are answered
-        submitBtn.disabled = answeredGejala < totalGejala;
-
-        if (gejalaId) {  // Only scroll if gejalaId is provided
-            // Scroll to next unanswered question if available
-            const gejalaItem = document.querySelector(`#g${gejalaId}_ya`).closest('.gejala-item');
-            const gejalaItems = Array.from(document.querySelectorAll('.gejala-item'));
-            const currentIndex = gejalaItems.indexOf(gejalaItem);
-
-            const nextUnanswered = gejalaItems.slice(currentIndex + 1).find(item =>
-                !item.querySelector('.gejala-answered')
-            );
-
-            if (nextUnanswered) {
-                const offset = 150;
-                const itemTop = nextUnanswered.offsetTop - offset;
-                window.scrollTo({
-                    top: itemTop,
-                    behavior: 'smooth'
-                });
+                // Jika YA, simpan ke array global untuk dikirim di akhir
+                if (val === 1) {
+                    allYesAnswers.push(id);
+                }
             }
+        });
+
+        if (!isComplete) {
+            alert('Mohon jawab semua pertanyaan yang tampil sebelum melanjutkan.');
+            return;
+        }
+
+        // Panggil Controller untuk analisa selanjutnya
+        loadQuestions('{{ route("diagnosa.next") }}', { jawaban: currentAnswers });
+    }
+
+    // Fungsi Finish: Submit Form Akhir ke Controller 'proses'
+    function finishDiagnosa() {
+        const form = document.getElementById('diagnosaForm');
+        const hiddenContainer = document.getElementById('final-answers-container');
+
+        // Buat input hidden untuk setiap jawaban YA
+        // Format: <input type="hidden" name="gejala[]" value="ID">
+        allYesAnswers.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'gejala[]';
+            input.value = id;
+            hiddenContainer.appendChild(input);
+        });
+
+        // Tampilkan loading terakhir sebelum redirect
+        showLoading(true);
+        document.getElementById('question-container').innerHTML = '';
+        document.getElementById('action-buttons').style.display = 'none';
+
+        // Submit form sesungguhnya
+        form.submit();
+    }
+
+    function showLoading(show) {
+        const spinner = document.getElementById('loadingSpinner');
+        const container = document.getElementById('question-container');
+        const btn = document.getElementById('btnLanjut');
+
+        if (show) {
+            spinner.style.display = 'block';
+            container.style.opacity = '0.5';
+            btn.disabled = true;
+        } else {
+            spinner.style.display = 'none';
+            container.style.opacity = '1';
+            btn.disabled = false;
         }
     }
 </script>
 @endpush
-@endsection

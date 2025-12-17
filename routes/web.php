@@ -29,6 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/diagnosa/riwayat', [DiagnosaController::class, 'riwayat'])->name('diagnosa.riwayat');
     Route::get('/diagnosa/detail/{konsultasi}', [DiagnosaController::class, 'show'])->name('diagnosa.show');
     Route::delete('/diagnosa/hapus/{konsultasi}', [DiagnosaController::class, 'destroy'])->name('diagnosa.destroy');
+    Route::post('/diagnosa/ajax-start', [DiagnosaController::class, 'ajaxStart'])->name('diagnosa.start');
+    Route::post('/diagnosa/ajax-next', [DiagnosaController::class, 'ajaxNext'])->name('diagnosa.next');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
