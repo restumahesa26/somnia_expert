@@ -46,7 +46,11 @@ class PenyakitGejalaController extends Controller
                 Rule::unique('penyakit_gejala')->where(fn($q)=>$q->where('penyakit_id',$request->penyakit_id))
             ],
             'bobot'       => ['required','numeric','between:0,1.0'],
+            'is_kunci'    => ['boolean'],
         ]);
+
+        // Set default false if not present (checkbox unchecked)
+        $data['is_kunci'] = $request->has('is_kunci');
 
         $item = PenyakitGejala::create($data);
 
@@ -74,7 +78,11 @@ class PenyakitGejalaController extends Controller
                     ->where(fn($q)=>$q->where('penyakit_id',$request->penyakit_id))
             ],
             'bobot'       => ['required','numeric','between:0,1.0'],
+            'is_kunci'    => ['boolean'],
         ]);
+
+        // Set default false if not present (checkbox unchecked)
+        $data['is_kunci'] = $request->has('is_kunci');
 
         $penyakit_gejala->update($data);
 

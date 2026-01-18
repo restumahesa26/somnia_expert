@@ -99,11 +99,11 @@ class DiagnosaController extends Controller
             $namaPenyakit = Penyakit::find($penyakitId)->nama_penyakit;
             $message = "Terindikasi " . $namaPenyakit . ". Melakukan konfirmasi detail.";
 
-            // Ambil gejala spesifik (Bobot >= 0.90) TAPI bukan kunci (karena kunci sudah ditanya)
+            // Ambil SEMUA gejala pendukung (apapun bobotnya) TAPI bukan kunci (karena kunci sudah ditanya)
             $queueIds = DB::table('penyakit_gejala')
                 ->where('penyakit_id', $penyakitId)
-                ->where('bobot', '>=', 0.90) 
-                ->where('is_kunci', false) // Hindari redundansi (meski difilter nanti)
+                // ->where('bobot', '>=', 0.80) // Constraint dihapus agar gejala bobot kecil tetap muncul
+                ->where('is_kunci', false) 
                 ->pluck('gejala_id')
                 ->toArray();
         } 
@@ -112,15 +112,15 @@ class DiagnosaController extends Controller
         elseif ($countDetected > 1) {
             $message = "Terdeteksi indikasi kompleks (Komorbiditas). Melakukan pemeriksaan menyeluruh.";
 
-            // 1. Ambil gejala DETAIL (>= 0.90) dari penyakit-penyakit yang terdeteksi
+            // 1. Ambil SEMUA gejala pendukung dari penyakit-penyakit yang terdeteksi
             $specificIds = DB::table('penyakit_gejala')
                 ->whereIn('penyakit_id', $detectedPenyakitIds)
-                ->where('bobot', '>=', 0.90)
+                // ->where('bobot', '>=', 0.80) // Constraint dihapus
                 ->where('is_kunci', false)
                 ->pluck('gejala_id')
                 ->toArray();
 
-            // 2. Ambil gejala TUMPANG TINDIH / CROSS-CHECK (0.80 - 0.85)
+            // 2. Ambil gejala TUMPANG TINDIH / CROSS-CHECK (0.80 - 0.89) untuk validasi silang
             $overlapIds = DB::table('penyakit_gejala')
                 ->whereBetween('bobot', [0.80, 0.89]) 
                 ->pluck('gejala_id')
@@ -133,7 +133,7 @@ class DiagnosaController extends Controller
         else {
             $message = "Tidak ada indikasi gejala berat. Melakukan pemeriksaan gejala umum.";
 
-            // Tampilkan gejala umum/overlap (0.80 - 0.85) untuk memastikan
+            // Tampilkan gejala umum/overlap (0.80 - 0.89) untuk memastikan
             $queueIds = DB::table('penyakit_gejala')
                 ->whereBetween('bobot', [0.80, 0.89])
                 ->pluck('gejala_id')
