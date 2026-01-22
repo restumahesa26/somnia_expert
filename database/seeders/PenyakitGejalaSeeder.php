@@ -137,7 +137,6 @@ class PenyakitGejalaSeeder extends Seeder
             'G42' => 0.95,
             'G43' => 0.95,
             'G44' => 0.90, // Bobot 0.90 tapi KEY
-            
             'G45' => 0.90,
             'G46' => 0.85,
             'G47' => 0.85,
