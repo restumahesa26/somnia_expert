@@ -39,10 +39,10 @@ class VCIRS
                 $cfPakar = (float) ($g->pivot->bobot ?? 0);
 
                 $temp[] = [
-                    'id'       => $gejalaId,
-                    'model'    => $g,
-                    'credit'   => $credit,
-                    'ns'       => $ns,
+                    'id' => $gejalaId,
+                    'model' => $g,
+                    'credit' => $credit,
+                    'ns' => $ns,
                     'cf_pakar' => $cfPakar,
                 ];
             }
@@ -52,6 +52,7 @@ class VCIRS
                 if ($a['ns'] === $b['ns']) {
                     return $a['id'] <=> $b['id'];
                 }
+
                 return $a['ns'] <=> $b['ns'];
             });
 
@@ -68,15 +69,15 @@ class VCIRS
                 $sumVur += $vur;
 
                 $vurList[$row['id']] = [
-                    'gejala'   => $row['model'],
-                    'credit'   => $row['credit'],
-                    'ns'       => $row['ns'],
-                    'vo'       => $vo,
-                    'cd'       => $cd,
-                    'weight'   => $weight,
-                    'vur'      => $vur,
+                    'gejala' => $row['model'],
+                    'credit' => $row['credit'],
+                    'ns' => $row['ns'],
+                    'vo' => $vo,
+                    'cd' => $cd,
+                    'weight' => $weight,
+                    'vur' => $vur,
                     'cf_pakar' => $row['cf_pakar'],
-                    'tv'       => $tv, // DITAMBAHKAN
+                    'tv' => $tv, // DITAMBAHKAN
                 ];
             }
 
@@ -112,16 +113,15 @@ class VCIRS
             // 6. Konversi ke persen
             $persen = round($cfCombined * 100, 2);
 
-            if ($persen > 0) {
-                $hasil[$penyakit->id] = [
-                    'penyakit' => $penyakit,
-                    'percent'  => $persen,
-                    'tv'       => $tv,
-                    'nur'      => $nur,
-                    'rur'      => $rur,
-                    'detail'   => $vurList,
-                ];
-            }
+            // Simpan hasil (bahkan jika 0%, sesuai request user)
+            $hasil[$penyakit->id] = [
+                'penyakit' => $penyakit,
+                'percent' => $persen,
+                'tv' => $tv,
+                'nur' => $nur,
+                'rur' => $rur,
+                'detail' => $vurList,
+            ];
         }
 
         // Urutkan penyakit berdasarkan persen tertinggi

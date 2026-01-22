@@ -193,7 +193,7 @@ class DiagnosaController extends Controller
     public function proses(Request $request, VCIRS $vcirs)
     {
         $request->validate([
-            'gejala' => 'required|array',
+            'gejala' => 'nullable|array',
             'gejala.*' => 'integer',
         ]);
 
