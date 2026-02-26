@@ -81,7 +81,7 @@
                             @enderror
                         </div>
 
-                        <div class="mb-3">
+                        {{-- <div class="mb-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" id="is_kunci"
                                     name="is_kunci" value="1" {{ old('is_kunci', $item->is_kunci) ? 'checked' : '' }}>
@@ -89,7 +89,7 @@
                             </div>
                             <div class="form-text">Centang jika gejala ini merupakan gejala kunci untuk penyakit tersebut.
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="mb-3">
                             <label class="form-label">Bobot</label>

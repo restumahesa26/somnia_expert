@@ -58,7 +58,7 @@
                                 <th>No</th>
                                 <th>Penyakit</th>
                                 <th>Gejala</th>
-                                <th class="text-center">Kunci?</th>
+                                {{-- <th class="text-center">Kunci?</th> --}}
                                 <th>Bobot</th>
                                 <th>Aksi</th>
                             </tr>
@@ -69,13 +69,13 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $item->penyakit->nama_penyakit }}</td>
                                     <td>{{ $item->gejala->nama_gejala }}</td>
-                                    <td class="text-center">
+                                    {{-- <td class="text-center">
                                         @if ($item->is_kunci)
                                             <span class="badge bg-success">Ya</span>
                                         @else
                                             <span class="badge bg-secondary">Tidak</span>
                                         @endif
-                                    </td>
+                                    </td> --}}
                                     <td>{{ number_format($item->bobot, 2) }}</td>
                                     <td>
                                         <a href="{{ route('penyakit-gejala.edit', $item->id) }}"
@@ -90,7 +90,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">Data Kosong</td>
+                                    <td colspan="5" class="text-center">Data Kosong</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -161,14 +161,9 @@
                     [0, 'asc']
                 ],
                 columnDefs: [{
-                        orderable: false,
-                        targets: [5]
-                    }, // kolom Aksi tidak bisa di-sort
-                    {
-                        className: "text-center",
-                        targets: [3]
-                    } // Center align Kunci? column
-                ],
+                    orderable: false,
+                    targets: [4]
+                }, ],
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/id.json'
                 }
