@@ -21,7 +21,7 @@ class DiagnosaController extends Controller
     public function ajaxStart()
     {
         // Reset sesi diagnosa
-        session()->forget(['diagnosa_temp_answers', 'diagnosa_queue']);
+        session()->forget(['diagnosa_temp_answers', 'diagnosa_queue', 'diagnosa_history']);
 
         // Titik Mulai G5
         $gejalaAwal = DB::table('gejala')
@@ -33,7 +33,26 @@ class DiagnosaController extends Controller
             'status' => 'next',
             'gejala' => $gejalaAwal,
             'message' => 'Fase 1: Pertanyaan Awal. Silakan jawab pertanyaan berikut.',
+            'can_go_back' => false,
+            'current_answers' => [],
         ]);
+    }
+
+    public function ajaxPrev(Request $request)
+    {
+        $currentAnswers = session('diagnosa_temp_answers', []);
+        $history = session('diagnosa_history', []);
+
+        if (! empty($history)) {
+            $lastBatch = array_pop($history);
+            foreach ($lastBatch as $id) {
+                unset($currentAnswers[$id]);
+            }
+            session(['diagnosa_history' => $history]);
+            session(['diagnosa_temp_answers' => $currentAnswers]);
+        }
+
+        return $this->processNextQuestions($currentAnswers, $history);
     }
 
     /**
@@ -44,9 +63,21 @@ class DiagnosaController extends Controller
         // 1. Simpan jawaban baru ke sesi
         $jawabanBaru = $request->input('jawaban', []);
         $currentAnswers = session('diagnosa_temp_answers', []);
+        $history = session('diagnosa_history', []);
+
+        if (! empty($jawabanBaru)) {
+            $history[] = array_keys($jawabanBaru);
+            session(['diagnosa_history' => $history]);
+        }
+
         $allAnswers = $currentAnswers + $jawabanBaru; // Merge jawaban
         session(['diagnosa_temp_answers' => $allAnswers]);
 
+        return $this->processNextQuestions($allAnswers, $history);
+    }
+
+    private function processNextQuestions($allAnswers, $history)
+    {
         // Build map of kode_gejala => answer (0 or 1)
         $gejalaMap = DB::table('gejala')->pluck('kode_gejala', 'id')->toArray();
         $answeredKodes = [];
@@ -62,7 +93,10 @@ class DiagnosaController extends Controller
         if (empty($toAskKodes)) {
             session()->forget('diagnosa_queue');
 
-            return response()->json(['status' => 'finish']);
+            return response()->json([
+                'status' => 'finish',
+                'current_answers' => $allAnswers,
+            ]);
         }
 
         // Convert kodes kembali ke array IDs
@@ -88,6 +122,8 @@ class DiagnosaController extends Controller
             'status' => 'next',
             'gejala' => $questions,
             'message' => 'Silakan jawab pertanyaan berikut untuk melanjutkan analisa.',
+            'can_go_back' => ! empty($history),
+            'current_answers' => $allAnswers,
         ]);
     }
 
@@ -96,73 +132,61 @@ class DiagnosaController extends Controller
      */
     private function determineNextQuestions($answeredKodes)
     {
-        $toAsk = [];
-
         // Titik Mulai: G5
         if (! isset($answeredKodes['G05'])) {
             return ['G05'];
         }
 
-        // Jika G5 dijawab Ya, kita evaluasi kedua cabang utamanya (G11 dan G6) secara paralel
+        // Jika G5 dijawab Ya, masuk ke cabang kiri
         if ($answeredKodes['G05'] == 1) {
 
-            // --- Evaluasi Cabang 1 (Menuju G11) ---
-            if (! isset($answeredKodes['G11'])) {
-                $toAsk[] = 'G11';
-            } elseif ($answeredKodes['G11'] == 1) {
-                // Jika G11 = Ya, kita tampilkan seluruh sisa node di cabang ini
-                $pathG11 = ['G35', 'G36', 'G37', 'G16', 'G38', 'G39', 'G40', 'G41'];
-                $toAsk = array_merge($toAsk, $this->getUnansweredInPath($pathG11, $answeredKodes));
+            // Menuju G6 (tampilkan satu per satu)
+            if (! isset($answeredKodes['G06'])) {
+                return ['G06'];
             }
 
-            // --- Evaluasi Cabang 2 (Menuju G6) ---
-            if (! isset($answeredKodes['G06'])) {
-                $toAsk[] = 'G06';
-            } elseif ($answeredKodes['G06'] == 1) {
-                // Pengecekan Cabang G2, G8, G16 secara paralel
-                if (! isset($answeredKodes['G02'])) {
-                    $toAsk[] = 'G02';
-                }
-                if (! isset($answeredKodes['G08'])) {
-                    $toAsk[] = 'G08';
-                }
-                if (! isset($answeredKodes['G16'])) {
-                    $toAsk[] = 'G16';
+            // G6 lanjut ke G11
+            if (! isset($answeredKodes['G11'])) {
+                return ['G11'];
+            }
+
+            // G11 sudah terjawab
+            if ($answeredKodes['G11'] == 1) { // Cabang Kiri (IYA) menuju G22
+                if (! isset($answeredKodes['G22'])) {
+                    return ['G22'];
                 }
 
-                // Evaluasi Cabang A (Melalui G2)
-                if (isset($answeredKodes['G02']) && $answeredKodes['G02'] == 1) {
-                    // Karena G11 juga ditanyakan di Cabang 1, sistem menggunakan jawaban yang sama
-                    if (! isset($answeredKodes['G11'])) {
-                        $toAsk[] = 'G11';
-                    } else {
-                        // Jika G11 = Ya, tampilkan gejala ke P2 DAN P1
-                        if ($answeredKodes['G11'] == 1) {
-                            $pathP2 = ['G12', 'G13', 'G14', 'G15', 'G19', 'G20', 'G18', 'G22', 'G16', 'G21', 'G17'];
-                            $toAsk = array_merge($toAsk, $this->getUnansweredInPath($pathP2, $answeredKodes));
-                        }
+                if ($answeredKodes['G22'] == 1) { // Cabang Kiri dari G22 (IYA) -> P2
+                    $pathP2 = ['G12', 'G13', 'G14', 'G15', 'G17', 'G18', 'G19', 'G20', 'G21', 'G02', 'G16'];
 
-                        // Path P1 selalu ditampilkan baik G11 Ya maupun Tidak
-                        $pathP1 = ['G03', 'G04', 'G07', 'G08', 'G09', 'G10', 'G01'];
-                        $toAsk = array_merge($toAsk, $this->getUnansweredInPath($pathP1, $answeredKodes));
-                    }
-                }
+                    return $this->getUnansweredInPath($pathP2, $answeredKodes);
+                } else { // Cabang Kanan dari G22 (Tidak) -> P3
+                    $pathP3 = ['G08', 'G23', 'G24', 'G25', 'G26', 'G27', 'G28', 'G29', 'G30', 'G31', 'G32', 'G33', 'G34'];
 
-                // Evaluasi Cabang B (Melalui G8)
-                if (isset($answeredKodes['G08']) && $answeredKodes['G08'] == 1) {
-                    $pathB = ['G22', 'G23', 'G24', 'G25', 'G26', 'G27', 'G28', 'G29', 'G30', 'G31', 'G32', 'G33', 'G34', 'G11'];
-                    $toAsk = array_merge($toAsk, $this->getUnansweredInPath($pathB, $answeredKodes));
+                    return $this->getUnansweredInPath($pathP3, $answeredKodes);
                 }
+            } else { // Cabang Kanan dari G11 (Tidak) -> P1
+                $pathP1 = ['G01', 'G02', 'G03', 'G04', 'G07', 'G08', 'G09', 'G10'];
 
-                // Evaluasi Cabang C (Melalui G16)
-                if (isset($answeredKodes['G16']) && $answeredKodes['G16'] == 1) {
-                    $pathC = ['G42', 'G43', 'G44', 'G45', 'G46', 'G47'];
-                    $toAsk = array_merge($toAsk, $this->getUnansweredInPath($pathC, $answeredKodes));
-                }
+                return $this->getUnansweredInPath($pathP1, $answeredKodes);
+            }
+
+        } else { // Jika G5 dijawab Tidak, masuk ke cabang kanan menuju G16
+
+            if (! isset($answeredKodes['G16'])) {
+                return ['G16'];
+            }
+
+            if ($answeredKodes['G16'] == 1) { // Cabang Kiri dari G16 (IYA) -> P5
+                $pathP5 = ['G42', 'G43', 'G44', 'G45', 'G46', 'G47', 'G06'];
+
+                return $this->getUnansweredInPath($pathP5, $answeredKodes);
+            } else { // Cabang Kanan dari G16 (Tidak) -> P4
+                $pathP4 = ['G11', 'G35', 'G36', 'G37', 'G38', 'G39', 'G40', 'G41'];
+
+                return $this->getUnansweredInPath($pathP4, $answeredKodes);
             }
         }
-
-        return array_values(array_unique($toAsk));
     }
 
     private function getUnansweredInPath($path, $answeredKodes)
