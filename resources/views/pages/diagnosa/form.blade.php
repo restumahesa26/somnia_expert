@@ -52,6 +52,22 @@
                 </div>
             @endif
 
+            <!-- Progress Bar Sticky -->
+            <div id="progress-card" class="card shadow-sm mb-4 sticky-top" style="top: 15px; z-index: 1020; display: none;">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold fs-6"><i class="mdi mdi-progress-check text-primary me-1"></i> Progress
+                            Diagnosa</span>
+                        <span class="badge bg-primary" id="progress-text">0 / 0 Terjawab</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                            role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="question-container">
             </div>
 
@@ -150,6 +166,8 @@
         // Variabel Global
         let currentBatchIds = []; // Menyimpan ID gejala yang sedang tampil
         let allYesAnswers = []; // Menyimpan semua ID gejala yang dijawab 'YA'
+        let globalTotalQuestions = 19; // Default max estimasi
+        let globalBaseAnswered = 0; // Jumlah soal yang telah dijawab di sesi
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -200,7 +218,13 @@
                     if (result.status === 'finish') {
                         finishDiagnosa();
                     } else {
+                        // Perbarui data progress dari server
+                        globalTotalQuestions = result.total_questions || 19;
+                        globalBaseAnswered = result.current_answers ? Object.keys(result.current_answers).length : 0;
+                        document.getElementById('progress-card').style.display = 'block';
+
                         renderQuestions(result.gejala);
+                        updateProgressUI(); // Panggil pertama kali saat pertanyaan dirender
                     }
                 })
                 .catch(error => {
@@ -257,8 +281,31 @@
             });
         }
 
+        // Fungsi Update Progress Bar
+        function updateProgressUI() {
+            // Hitung jawaban yang sudah dijawab pada batch saat ini di UI (belum disubmit ke server)
+            let currentBatchAnswered = 0;
+            currentBatchIds.forEach(id => {
+                const yes = document.getElementById(`yes_${id}`);
+                const no = document.getElementById(`no_${id}`);
+                if ((yes && yes.checked) || (no && no.checked)) {
+                    currentBatchAnswered++;
+                }
+            });
+
+            const totalAnswered = globalBaseAnswered + currentBatchAnswered;
+            // Menghindari progress melebih 100% jika ada ketidaksesuaian estimasi
+            const progressPercent = Math.min((totalAnswered / globalTotalQuestions) * 100, 100);
+
+            document.getElementById('progress-text').innerText = `${totalAnswered} / ${globalTotalQuestions} Terjawab`;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+            document.getElementById('progress-bar').setAttribute('aria-valuenow', progressPercent);
+        }
+
         // Fungsi Scroll Otomatis
         function scrollToNext(currentIndex) {
+            updateProgressUI(); // Update UI Progress saat user klik pilihan
+
             // Cek apakah ada pertanyaan berikutnya di batch yang sama
             if (currentIndex + 1 < currentBatchIds.length) {
                 const nextId = currentBatchIds[currentIndex + 1];
