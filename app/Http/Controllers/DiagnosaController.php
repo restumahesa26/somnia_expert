@@ -103,25 +103,23 @@ class DiagnosaController extends Controller
         $totalQuestions = 19; // Max default (P3)
         if (isset($answeredKodes['G06'])) {
             if ($answeredKodes['G06'] == 1) {
-                if (isset($answeredKodes['G01']) && $answeredKodes['G01'] == 1) {
-                    $totalQuestions = 11; // P1
-                } elseif (isset($answeredKodes['G12'])) {
-                    if ($answeredKodes['G12'] == 1) {
-                        $totalQuestions = 16; // P2
+                if (isset($answeredKodes['G11'])) {
+                    if ($answeredKodes['G11'] == 1) {
+                        if (isset($answeredKodes['G01']) && $answeredKodes['G01'] == 1) {
+                            $totalQuestions = 11; // P1
+                        } elseif (isset($answeredKodes['G12'])) {
+                            if ($answeredKodes['G12'] == 1) {
+                                $totalQuestions = 16; // P2
+                            } else {
+                                $totalQuestions = 19; // P3
+                            }
+                        }
                     } else {
-                        $totalQuestions = 19; // P3
+                        $totalQuestions = 10; // P5
                     }
                 }
             } else {
-                if (isset($answeredKodes['G42'])) {
-                    if ($answeredKodes['G42'] == 1) {
-                        $totalQuestions = 9; // P5
-                    } else {
-                        $totalQuestions = 12; // P4
-                    }
-                } else {
-                    $totalQuestions = 12; // Estimasi jika G06=0 tapi belum jawab G42
-                }
+                $totalQuestions = 11; // P4
             }
         }
 
@@ -177,64 +175,53 @@ class DiagnosaController extends Controller
                 return ['G11'];
             }
 
-            // Dari G11, tanpa mempedulikan jawaban, lanjut ke G1
-            if (! isset($answeredKodes['G01'])) {
-                return ['G01'];
-            }
+            // Percabangan di G11
+            if ($answeredKodes['G11'] == 1) { // Cabang Kiri G11 (IYA)
 
-            // Percabangan di G1
-            if ($answeredKodes['G01'] == 1) { // Cabang Kiri dari G1 (IYA) -> P1
-                $pathP1 = ['G02', 'G03', 'G04', 'G07', 'G08', 'G09', 'G10'];
-
-                return $this->getUnansweredInPath($pathP1, $answeredKodes);
-
-            } else { // Cabang Kanan dari G1 (TIDAK) -> G22
-
-                if (! isset($answeredKodes['G22'])) {
-                    return ['G22'];
+                // Lanjut ke G1
+                if (! isset($answeredKodes['G01'])) {
+                    return ['G01'];
                 }
 
-                // Dari G22, tanpa mempedulikan jawaban, lanjut ke G12
-                if (! isset($answeredKodes['G12'])) {
-                    return ['G12'];
+                // Percabangan di G1
+                if ($answeredKodes['G01'] == 1) { // Cabang Kiri dari G1 (IYA) -> P1
+                    $pathP1 = ['G02', 'G03', 'G04', 'G07', 'G08', 'G09', 'G10'];
+
+                    return $this->getUnansweredInPath($pathP1, $answeredKodes);
+
+                } else { // Cabang Kanan dari G1 (TIDAK) -> G22
+
+                    if (! isset($answeredKodes['G22'])) {
+                        return ['G22'];
+                    }
+
+                    // Dari G22, tanpa mempedulikan jawaban, lanjut ke G12
+                    if (! isset($answeredKodes['G12'])) {
+                        return ['G12'];
+                    }
+
+                    // Percabangan di G12
+                    if ($answeredKodes['G12'] == 1) { // Cabang Kiri dari G12 (IYA) -> P2
+                        $pathP2 = ['G13', 'G14', 'G15', 'G02', 'G19', 'G20', 'G18', 'G16', 'G21', 'G17'];
+
+                        return $this->getUnansweredInPath($pathP2, $answeredKodes);
+
+                    } else { // Cabang Kanan dari G12 (TIDAK) -> P3
+                        $pathP3 = ['G23', 'G24', 'G25', 'G26', 'G32', 'G30', 'G27', 'G29', 'G31', 'G33', 'G34', 'G08', 'G28'];
+
+                        return $this->getUnansweredInPath($pathP3, $answeredKodes);
+                    }
                 }
-
-                // Percabangan di G12
-                if ($answeredKodes['G12'] == 1) { // Cabang Kiri dari G12 (IYA) -> P2
-                    $pathP2 = ['G13', 'G14', 'G15', 'G17', 'G18', 'G19', 'G20', 'G21', 'G02', 'G16'];
-
-                    return $this->getUnansweredInPath($pathP2, $answeredKodes);
-
-                } else { // Cabang Kanan dari G12 (TIDAK) -> P3
-                    $pathP3 = ['G08', 'G23', 'G24', 'G25', 'G26', 'G27', 'G28', 'G29', 'G30', 'G31', 'G32', 'G33', 'G34'];
-
-                    return $this->getUnansweredInPath($pathP3, $answeredKodes);
-                }
-            }
-
-        } else { // Cabang Kanan dari G6 (TIDAK) -> G16
-
-            // Menuju G16
-            if (! isset($answeredKodes['G16'])) {
-                return ['G16'];
-            }
-
-            // Dari G16, tanpa mempedulikan jawaban, lanjut ke G42
-            if (! isset($answeredKodes['G42'])) {
-                return ['G42'];
-            }
-
-            // Percabangan di G42
-            if ($answeredKodes['G42'] == 1) { // Cabang Kiri dari G42 (IYA) -> P5
-                $pathP5 = ['G43', 'G44', 'G45', 'G46', 'G47', 'G06'];
+            } else { // Cabang Kanan G11 (TIDAK) -> P5
+                $pathP5 = ['G42', 'G43', 'G44', 'G45', 'G46', 'G47', 'G16'];
 
                 return $this->getUnansweredInPath($pathP5, $answeredKodes);
-
-            } else { // Cabang Kanan dari G42 (TIDAK) -> P4
-                $pathP4 = ['G11', 'G35', 'G36', 'G37', 'G38', 'G39', 'G40', 'G41'];
-
-                return $this->getUnansweredInPath($pathP4, $answeredKodes);
             }
+
+        } else { // Cabang Kanan dari G6 (TIDAK) -> P4
+            $pathP4 = ['G35', 'G36', 'G37', 'G38', 'G39', 'G40', 'G16', 'G41', 'G11'];
+
+            return $this->getUnansweredInPath($pathP4, $answeredKodes);
         }
     }
 
