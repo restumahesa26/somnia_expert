@@ -49,7 +49,7 @@
                                         <span class="mdi mdi-pencil"></span>
                                     </a>
                                     <button type="button" class="btn btn-danger btn-sm"
-                                        onclick="handleDelete('{{ $item->id }}', '{{ $item->nama_gejala }}')">
+                                        onclick="handleDelete('{{ $item->id }}', '{{ $item->nama_gejala }}', {{ $item->penyakits_count }})">
                                         <span class="mdi mdi-delete"></span>
                                     </button>
                                 </td>
@@ -73,7 +73,10 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                Apakah Anda yakin ingin menghapus gejala <span id="gejalaName"></span>?
+                                <p class="mb-1">Apakah Anda yakin ingin menghapus gejala <strong id="gejalaName"></strong>?</p>
+                                <div id="warningPenyakitGejala" class="text-danger d-none mt-2">
+                                    <i class="mdi mdi-alert"></i> Peringatan: Menghapus gejala ini akan menghapus data di bobot gejala yang terkait dengannya.
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <form id="deleteForm" method="POST">
@@ -138,12 +141,19 @@
                 });
             }).draw();
         });
-        function handleDelete(id, name) {
+        function handleDelete(id, name, relationCount) {
             const deleteForm = document.getElementById('deleteForm');
             const gejalaName = document.getElementById('gejalaName');
+            const warningEl = document.getElementById('warningPenyakitGejala');
 
             deleteForm.action = `{{ url('gejala') }}/${id}`;
             gejalaName.textContent = name;
+            
+            if (relationCount > 0) {
+                warningEl.classList.remove('d-none');
+            } else {
+                warningEl.classList.add('d-none');
+            }
 
             $('#deleteModal').modal('show');
         }

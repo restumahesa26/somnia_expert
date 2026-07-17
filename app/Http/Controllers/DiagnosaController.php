@@ -61,91 +61,88 @@ class DiagnosaController extends Controller
             return $this->processQueue($allAnswers);
         }
 
-        // 3. Jika BELUM, berarti ini baru selesai Fase I. Kita harus tentukan Skenario.
-        // Logika Penentuan Skenario
+        // 3. Jika BELUM, berarti ini baru selesai Fase I. Kita harus tentukan Prioritas Penyakit.
+        // TAHAP 2: Prioritas Penyakit (Logic)
         
-        // Ambil definisi "Trigger" (Gejala Kunci)
+        // Ambil definisi "Trigger" (Gejala Kunci) dan grouping by Penyakit
         $triggers = DB::table('penyakit_gejala')
             ->select('penyakit_id', 'gejala_id')
-            ->where('is_kunci', true) // UPDATE: Pakai is_kunci
+            ->where('is_kunci', true) 
             ->get()
             ->groupBy('penyakit_id');
 
-        $detectedPenyakitIds = [];
+        $penyakitScores = [];
 
+        // Hitung match count tiap penyakit
         foreach ($triggers as $penyakitId => $items) {
-            // Logic: Penyakit dianggap 'suspect' jika SEMUA atau SEBAGIAN BESAR key symptoms terpenuhi?
-            // Biasanya cukup 1 atau beberapa. Mari kita pakai threshold minimal 1 key symptom = suspect.
-            // Atau lebih ketat: minimal 50% dari key symptoms? 
-            // Untuk sensitivitas tinggi (screening), minimal 1 "Ya" sudah cukup memicu investigasi lanjut.
+            $matchCount = 0;
             foreach ($items as $item) {
+                // Cek apakah user menjawab YA (1) untuk gejala kunci ini
                 if (isset($allAnswers[$item->gejala_id]) && $allAnswers[$item->gejala_id] == 1) {
-                    $detectedPenyakitIds[] = $penyakitId;
-                    break; 
+                    $matchCount++;
                 }
             }
+            
+            // Hanya masukkan penyakit yang memiliki setidaknya 1 gejala kunci terpenuhi
+            if ($matchCount > 0) {
+                $penyakitScores[$penyakitId] = $matchCount;
+            }
         }
-        
-        $detectedPenyakitIds = array_unique($detectedPenyakitIds);
-        $countDetected = count($detectedPenyakitIds);
         
         $queueIds = [];
         $message = '';
 
-        // Skenario 1: DIAGNOSIS SPESIFIK (Scenario A)
-        // Hanya 1 penyakit terdeteksi. Only ask specific symptoms defined for Phase 2.
-        if ($countDetected == 1) {
-            $penyakitId = $detectedPenyakitIds[0];
-            $namaPenyakit = Penyakit::find($penyakitId)->nama_penyakit;
-            $message = "Terindikasi " . $namaPenyakit . ". Melakukan konfirmasi detail.";
+        // Jika ada penyakit yang terdeteksi (Skor > 0)
+        if (!empty($penyakitScores)) {
+            // Urutkan penyakit berdasarkan score tertinggi (Desc)
+            arsort($penyakitScores);
+            
+            // Nama penyakit prioritas utama untuk pesan
+            $topPenyakitId = array_key_first($penyakitScores);
+            $namaPenyakit = Penyakit::find($topPenyakitId)->nama_penyakit;
+            $message = "Berdasarkan gejala awal, sistem mendeteksi indikasi ke arah $namaPenyakit dan lainnya. Melanjutkan diagnosa mendalam.";
 
-            // Ambil gejala spesifik (Bobot >= 0.90) TAPI bukan kunci (karena kunci sudah ditanya)
+            // TAHAP 3: Pertanyaan Lanjutan (Dinamis)
+            // Ambil sisa gejala (non-key) untuk penyakit yang terdeteksi, urut sesuai prioritas penyakit
+            foreach ($penyakitScores as $penyakitId => $score) {
+                // Ambil semua gejala non-kunci untuk penyakit ini, urutkan by bobot agar yang terpenting ditanya duluan
+                $symptoms = DB::table('penyakit_gejala')
+                    ->where('penyakit_id', $penyakitId)
+                    ->where('is_kunci', false)
+                    ->orderBy('bobot', 'desc')
+                    ->pluck('gejala_id')
+                    ->toArray();
+                
+                // Masukkan ke antrian (array_unique nanti akan handle duplikat, keeping first occurrence)
+                $queueIds = array_merge($queueIds, $symptoms);
+            }
+            
+            // Hapus duplikat (Gejala yang sama mungkin muncul di penyakit prioritas rendah, 
+            // tapi karena sudah masuk via penyakit prioritas tinggi, ia tetap di posisi atas)
+            $queueIds = array_unique($queueIds);
+
+        } else {
+            // TAHAP ALTERNATIF: Tidak ada gejala kunci yg dipilih (Scenario C / Zero Match)
+            // User tidak memilih satupun gejala kunci. 
+            // Logic: Tampilkan gejala umum/overlap (bobot menengah) untuk antisipasi, atau stop.
+            // Sesuai request: "Jangan tampilkan ... kecuali saran logic lain".
+            // Kita tetap tampilkan screening umum (overlap) untuk safety.
+            
+            $message = "Gejala kunci tidak terdeteksi. Melakukan pemeriksaan gejala umum.";
+
             $queueIds = DB::table('penyakit_gejala')
-                ->where('penyakit_id', $penyakitId)
-                ->where('bobot', '>=', 0.90) 
-                ->where('is_kunci', false) // Hindari redundansi (meski difilter nanti)
-                ->pluck('gejala_id')
-                ->toArray();
-        } 
-        // Skenario 2: KOMORBIDITAS (Scenario B)
-        // Lebih dari 1 penyakit terdeteksi.
-        elseif ($countDetected > 1) {
-            $message = "Terdeteksi indikasi kompleks (Komorbiditas). Melakukan pemeriksaan menyeluruh.";
-
-            // 1. Ambil gejala DETAIL (>= 0.90) dari penyakit-penyakit yang terdeteksi
-            $specificIds = DB::table('penyakit_gejala')
-                ->whereIn('penyakit_id', $detectedPenyakitIds)
-                ->where('bobot', '>=', 0.90)
-                ->where('is_kunci', false)
-                ->pluck('gejala_id')
-                ->toArray();
-
-            // 2. Ambil gejala TUMPANG TINDIH / CROSS-CHECK (0.80 - 0.85)
-            $overlapIds = DB::table('penyakit_gejala')
-                ->whereBetween('bobot', [0.80, 0.89]) 
-                ->pluck('gejala_id')
-                ->toArray();
-
-            $queueIds = array_unique(array_merge($specificIds, $overlapIds));
-        }
-        // Skenario 3: SEHAT / DIAGNOSA NEGATIF (Scenario C)
-        // Tidak ada trigger yang terpenuhi.
-        else {
-            $message = "Tidak ada indikasi gejala berat. Melakukan pemeriksaan gejala umum.";
-
-            // Tampilkan gejala umum/overlap (0.80 - 0.85) untuk memastikan
-            $queueIds = DB::table('penyakit_gejala')
-                ->whereBetween('bobot', [0.80, 0.89])
+                ->whereBetween('bobot', [0.80, 0.89]) // Gejala overlap / umum
                 ->pluck('gejala_id')
                 ->unique()
                 ->toArray();
         }
 
         // Filter: Hapus ID yang sudah dijawab (dari Phase 1)
-        $unansweredQueue = array_diff($queueIds, array_keys($allAnswers));
+        // Note: array_values untuk re-index 0,1,2...
+        $unansweredQueue = array_values(array_diff($queueIds, array_keys($allAnswers)));
         
-        // Simpan antrian ke sesi agar konsisten
-        session(['diagnosa_queue' => array_values($unansweredQueue)]);
+        // Simpan antrian ke sesi
+        session(['diagnosa_queue' => $unansweredQueue]);
         
         // Panggil fungsi processing queue
         return $this->processQueue($allAnswers, $message);

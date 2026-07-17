@@ -13,7 +13,7 @@ class GejalaController extends Controller
      */
     public function index()
     {
-        $items = Gejala::all();
+        $items = Gejala::withCount('penyakits')->get();
 
         return view('pages.gejala.index', compact('items'));
     }
@@ -81,6 +81,10 @@ class GejalaController extends Controller
     public function destroy(string $id)
     {
         $item = Gejala::findOrFail($id);
+        
+        // Hapus data relasi (bobot gejala) terlebih dahulu
+        $item->penyakits()->detach();
+        
         $item->delete();
 
         return redirect()->route('gejala.index')->with('success', 'Gejala deleted successfully.');

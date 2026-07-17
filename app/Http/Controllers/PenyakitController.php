@@ -12,7 +12,7 @@ class PenyakitController extends Controller
      */
     public function index()
     {
-        $items = Penyakit::all();
+        $items = Penyakit::withCount('gejalas')->get();
         return view('pages.penyakit.index', compact('items'));
     }
 
@@ -78,6 +78,10 @@ class PenyakitController extends Controller
     public function destroy(string $id)
     {
         $item = Penyakit::findOrFail($id);
+        
+        // Hapus data relasi (bobot gejala) terlebih dahulu
+        $item->gejalas()->detach();
+        
         $item->delete();
 
         return redirect()

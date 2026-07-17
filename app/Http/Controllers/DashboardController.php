@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Konsultasi;
-use App\Models\Gejala;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use App\Models\User;
 
 class DashboardController extends Controller
 {
@@ -22,65 +21,18 @@ class DashboardController extends Controller
             // ===== DASHBOARD ADMIN =
             // =======================
 
-            // Kartu ringkas
-            $totalUsers = User::count();
-            $totalDiagnoses = Konsultasi::count();
-            $todayDiagnoses = Konsultasi::whereDate('created_at', Carbon::today())->count();
-
-            // High risk (top result percent >= 80)
-            $all = Konsultasi::select(['id','user_id','hasil','created_at'])->latest()->get();
-            $highRiskCount = $all->filter(function ($item) {
-                $top = collect($item->hasil)->first();
-                $p = $top ? ($top['percent'] ?? 0) : 0;
-                return $p >= 80;
-            })->count();
-
-            // Riwayat 10 terbaru semua user
-            $recentDiagnoses = Konsultasi::with('user')->latest()->take(10)->get();
-
-            // Distribusi severity dari 50 data terbaru
-            $latest50 = Konsultasi::latest()->take(50)->get();
-            $diagnosisDistribution = $latest50->map(function ($d) {
-                $top = collect($d->hasil)->first();
-                $percent = $top ? ($top['percent'] ?? 0) : 0;
-                $severity = $percent >= 80 ? 'Tinggi' : ($percent >= 50 ? 'Sedang' : 'Rendah');
-                return ['severity' => $severity];
-            })->groupBy('severity')->map(function ($group) use ($latest50) {
-                return [
-                    'count' => $group->count(),
-                    'percentage' => $latest50->count() ? round(($group->count() / $latest50->count()) * 100, 2) : 0
-                ];
-            });
-
-            // Tren 7 hari: rata-rata persentase per hari
-            $dates = collect(range(0,6))->map(fn($i) => Carbon::today()->subDays(6 - $i));
-            $chartDates = $dates->map(fn($d) => $d->format('d M'))->all();
-            $chartSeverity = $dates->map(function ($date) {
-                $dayData = Konsultasi::whereDate('created_at', $date)->get();
-                if ($dayData->isEmpty()) return 0;
-                $avg = $dayData->map(function ($d) {
-                    $top = collect($d->hasil)->first();
-                    return $top ? ($top['percent'] ?? 0) : 0;
-                })->avg();
-                return round($avg, 2);
-            })->all();
-
-            return view('pages.dashboard_admin', [
-                'totalUsers' => $totalUsers,
-                'totalDiagnoses' => $totalDiagnoses,
-                'highRiskCount' => $highRiskCount,
-                'todayDiagnoses' => $todayDiagnoses,
-                'diagnosisDistribution' => $diagnosisDistribution,
-                'chartDates' => $chartDates,
-                'chartSeverity' => $chartSeverity,
-                'recentDiagnoses' => $recentDiagnoses,
-            ]);
+            return view('pages.dashboard_admin');
         }
 
         // =======================
         // ===== DASHBOARD USER ==
         // =======================
-        // (logika existing milikmu disatukan di sini)
+        return view('pages.dashboard');
+    }
+
+    public function userData(Request $request)
+    {
+        $user = Auth::user();
 
         // 10 diagnosa terakhir user (RAW - Eloquent)
         $recentDiagnosesRaw = Konsultasi::where('user_id', $user->id)
@@ -100,7 +52,7 @@ class DashboardController extends Controller
         if ($lastDiagnosis) {
             $lastResult = collect($lastDiagnosis->hasil)->first();
             $lastCF = $lastResult ? ($lastResult['percent'] ?? 0) : 0;
-            $lastDiagnosisDate = $lastDiagnosis->created_at;
+            $lastDiagnosisDate = \Carbon\Carbon::parse($lastDiagnosis->created_at)->format('d M Y');
 
             $sevenDaysAgo = Konsultasi::where('user_id', $user->id)
                 ->where('created_at', '<=', now()->subDays(7))
@@ -114,82 +66,192 @@ class DashboardController extends Controller
                 $currentStatusTrend = $lastWeekTrend;
             }
 
-            if ($lastCF >= 80) $currentStatus = 'Berisiko';
-            elseif ($lastCF >= 50) $currentStatus = 'Waspada';
+            if ($lastCF >= 80) {
+                $currentStatus = 'Berisiko';
+            } elseif ($lastCF >= 50) {
+                $currentStatus = 'Waspada';
+            }
         }
 
-        // BARU: mapping untuk tampilan tabel di Blade (stdClass)
-        $recentDiagnoses = $recentDiagnosesRaw->map(function($d) use ($user) {
+        // Mapping untuk tampilan tabel (JSON)
+        $recentDiagnoses = $recentDiagnosesRaw->map(function ($d) {
             $top = collect($d->hasil)->first();
             $percent = $top ? ($top['percent'] ?? 0) : 0;
             $severity = $percent >= 80 ? 'Tinggi' : ($percent >= 50 ? 'Sedang' : 'Rendah');
 
-            return (object)[
-                'id'             => $d->id,
-                'created_at'     => $d->created_at,
-                'nama_user'      => $user->name,
-                'gangguan'       => $top ? ($top['nama'] ?? ($top['name'] ?? 'Tidak terdeteksi')) : 'Tidak terdeteksi',
+            return [
+                'id' => $d->id,
+                'created_at' => \Carbon\Carbon::parse($d->created_at)->format('d M Y H:i'),
+                'gangguan' => $top ? ($top['nama'] ?? ($top['name'] ?? 'Tidak terdeteksi')) : 'Tidak terdeteksi',
                 'severity_level' => $severity,
-                'percent'        => $percent,
-                'status_color'   => $percent >= 80 ? 'danger' : ($percent >= 50 ? 'warning' : 'success'),
-                'is_admin_input' => $d->is_admin_input,
+                'percent' => $percent,
+                'status_color' => $percent >= 80 ? 'danger' : ($percent >= 50 ? 'warning' : 'success'),
             ];
         });
 
-        // Statistik personal
-        $totalDiagnoses = $recentDiagnoses->count(); // pakai hasil mapping saja
+        $totalDiagnoses = Konsultasi::where('user_id', $user->id)->count();
 
-        // 🔧 FIX: Distribusi severity TIDAK lagi akses $diagnosis->hasil
+        // Distribusi severity
         $diagnosisDistribution = $recentDiagnoses
             ->groupBy('severity_level')
-            ->map(function($group) use ($totalDiagnoses) {
+            ->map(function ($group) use ($totalDiagnoses) {
                 return [
                     'count' => $group->count(),
-                    'percentage' => $totalDiagnoses ? round(($group->count() / $totalDiagnoses) * 100, 2) : 0
+                    'percentage' => $totalDiagnoses ? round(($group->count() / $totalDiagnoses) * 100, 2) : 0,
                 ];
             });
 
-        // Tren personal (7 entri terakhir) – tetap pakai RAW karena butuh $d->hasil
+        // Tren personal (7 entri terakhir)
         $trendData = Konsultasi::where('user_id', $user->id)
             ->latest()
             ->take(7)
             ->get()
             ->reverse();
 
-        $chartDates = $trendData->map(fn($d) => \Carbon\Carbon::parse($d->created_at)->format('d M'))->values();
+        $chartDates = $trendData->map(fn ($d) => \Carbon\Carbon::parse($d->created_at)->format('d M'))->values();
         $chartSeverity = $trendData->map(function ($d) {
             $top = collect($d->hasil)->first();
             return $top ? ($top['percent'] ?? 0) : 0;
         })->values();
 
-        return view('pages.dashboard', [
+        return response()->json([
             'totalDiagnoses' => $totalDiagnoses,
             'diagnosisDistribution' => $diagnosisDistribution,
             'chartDates' => $chartDates,
             'chartSeverity' => $chartSeverity,
             'recentDiagnoses' => $recentDiagnoses,
-            'user' => $user,
-            'lastResult' => $lastResult,
-            'lastCF' => $lastCF,
-            'lastWeekTrend' => $lastWeekTrend,
+            'lastResultName' => $lastResult ? ($lastResult['nama'] ?? ($lastResult['name'] ?? '-')) : '-',
+            'lastCF' => round($lastCF, 2),
+            'lastWeekTrend' => round($lastWeekTrend, 2),
             'lastDiagnosisDate' => $lastDiagnosisDate,
             'currentStatus' => $currentStatus,
-            'currentStatusTrend' => $currentStatusTrend
+            'currentStatusTrend' => round($currentStatusTrend, 2),
         ]);
     }
 
-
     private function getSeverityLevel($percent)
     {
-        if ($percent >= 80) return 'Tinggi';
-        if ($percent >= 50) return 'Sedang';
+        if ($percent >= 80) {
+            return 'Tinggi';
+        }
+        if ($percent >= 50) {
+            return 'Sedang';
+        }
+
         return 'Rendah';
     }
 
     private function getStatusColor($percent)
     {
-        if ($percent >= 80) return 'danger';
-        if ($percent >= 50) return 'warning';
+        if ($percent >= 80) {
+            return 'danger';
+        }
+        if ($percent >= 50) {
+            return 'warning';
+        }
+
         return 'success';
+    }
+
+    public function adminData(Request $request)
+    {
+        if (! Auth::user()->is_admin) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $filter = $request->get('filter', '7_hari'); // default to 7 days for quick overview
+        $startDate = Carbon::today()->subDays(6);
+        $endDate = Carbon::today();
+
+        if ($filter === '2_minggu') {
+            $startDate = Carbon::today()->subDays(13);
+        } elseif ($filter === '1_bulan') {
+            $startDate = Carbon::today()->subDays(29);
+        } elseif ($filter === 'custom') {
+            $startDate = Carbon::parse($request->get('start_date', Carbon::today()->subDays(6)));
+            $endDate = Carbon::parse($request->get('end_date', Carbon::today()));
+        }
+
+        $diffInDays = $startDate->diffInDays($endDate);
+
+        // Adjust queries using dates
+        // For total users, since it's global let's count all or filtered. The user didn't specify.
+        // Let's count new users in this period and total users overall.
+        $totalUsers = User::count();
+        $totalDiagnoses = Konsultasi::whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])->count();
+        $todayDiagnoses = Konsultasi::whereDate('created_at', Carbon::today())->count();
+
+        // High risk (top result percent >= 80)
+        $all = Konsultasi::whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->select(['id', 'user_id', 'hasil', 'created_at'])->latest()->get();
+
+        $highRiskCount = $all->filter(function ($item) {
+            $top = collect($item->hasil)->first();
+            $p = $top ? ($top['percent'] ?? 0) : 0;
+
+            return $p >= 80;
+        })->count();
+
+        // Riwayat 10 terbaru
+        $recentDiagnoses = Konsultasi::with('user')->latest()->take(10)->get()->map(function ($diagnosis) {
+            $top = collect($diagnosis->hasil)->first();
+            $percent = $top ? $top['percent'] : 0;
+            $level = $percent >= 80 ? 'Tinggi' : ($percent >= 50 ? 'Sedang' : 'Rendah');
+            $badgeColor = $percent >= 80 ? 'danger' : ($percent >= 50 ? 'warning' : 'success');
+
+            return [
+                'id' => $diagnosis->id,
+                'user_name' => optional($diagnosis->user)->nama ?? 'User #'.$diagnosis->user_id,
+                'date' => \Carbon\Carbon::parse($diagnosis->created_at)->translatedFormat('d M Y H:i'),
+                'gangguan' => $top ? $top['nama'] ?? ($top['name'] ?? '-') : '-',
+                'percent' => number_format($percent, 2).'%',
+                'level' => $level,
+                'badge_color' => $badgeColor,
+            ];
+        });
+
+        // Tren grafik (dioptimasi & difilter)
+        $dates = collect(range(0, $diffInDays))->map(fn ($i) => $endDate->copy()->subDays($diffInDays - $i));
+        
+        $periodData = Konsultasi::whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->get()
+            ->groupBy(function($item) {
+                return \Carbon\Carbon::parse($item->created_at)->format('Y-m-d');
+            });
+
+        $chartDates = [];
+        $chartSeverity = [];
+
+        foreach ($dates as $date) {
+            $dateStr = $date->format('Y-m-d');
+            $dayData = $periodData->get($dateStr);
+            
+            if (!$dayData || $dayData->isEmpty()) {
+                // Jangan tampilkan jika filter kustom dan tidak ada data di tanggal tersebut
+                if ($filter === 'custom') {
+                    continue;
+                }
+                $chartDates[] = $date->format('d M');
+                $chartSeverity[] = 0;
+            } else {
+                $avg = $dayData->map(function ($d) {
+                    $top = collect($d->hasil)->first();
+                    return $top ? ($top['percent'] ?? 0) : 0;
+                })->avg();
+                
+                $chartDates[] = $date->format('d M');
+                $chartSeverity[] = round($avg, 2);
+            }
+        }
+
+        return response()->json([
+            'totalUsers' => number_format($totalUsers),
+            'totalDiagnoses' => number_format($totalDiagnoses),
+            'todayDiagnoses' => number_format($todayDiagnoses),
+            'highRiskCount' => number_format($highRiskCount),
+            'chartDates' => $chartDates,
+            'chartSeverity' => $chartSeverity,
+            'recentDiagnoses' => $recentDiagnoses,
+        ]);
     }
 }

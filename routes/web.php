@@ -15,9 +15,11 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/user-data', [DashboardController::class, 'userData'])->name('dashboard.user-data');
 
     // Admin only routes
     Route::middleware('admin')->group(function () {
+        Route::get('/dashboard/admin-data', [DashboardController::class, 'adminData'])->name('dashboard.admin-data');
         Route::resource('gejala', GejalaController::class);
         Route::resource('penyakit', PenyakitController::class);
         Route::resource('penyakit-gejala', PenyakitGejalaController::class)->except(['show']);

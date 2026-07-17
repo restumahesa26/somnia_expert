@@ -88,7 +88,6 @@ class PenyakitGejalaSeeder extends Seeder
             'G23' => 0.95,
             'G24' => 0.95, 
             'G25' => 0.95, // Naik jadi Kunci (sebelumnya 0.90 atau 0.95)
-            
             'G11' => 0.95, // High weight tapi BUKAN kunci di fase awal (berdasar request)
             'G32' => 0.90,
             'G26' => 0.90,

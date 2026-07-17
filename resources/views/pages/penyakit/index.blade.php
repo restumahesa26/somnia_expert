@@ -47,7 +47,7 @@
                                         <span class="mdi mdi-pencil"></span>
                                     </a>
                                     <button type="button" class="btn btn-danger btn-sm"
-                                        onclick="handleDelete('{{ $item->id }}', '{{ $item->nama_penyakit }}')">
+                                        onclick="handleDelete('{{ $item->id }}', '{{ $item->nama_penyakit }}', {{ $item->gejalas_count }})">
                                         <span class="mdi mdi-delete"></span>
                                     </button>
                                 </td>
@@ -72,7 +72,10 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                Apakah Anda yakin ingin menghapus penyakit <span id="penyakitName"></span>?
+                                <p class="mb-1">Apakah Anda yakin ingin menghapus penyakit <strong id="penyakitName"></strong>?</p>
+                                <div id="warningPenyakitGejala" class="text-danger d-none mt-2">
+                                    <i class="mdi mdi-alert"></i> Peringatan: Menghapus penyakit ini akan menghapus data di bobot gejala yang terkait dengannya.
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <form id="deleteForm" method="POST">
@@ -127,12 +130,19 @@
                 });
             }).draw();
         });
-        function handleDelete(id, name) {
+        function handleDelete(id, name, relationCount) {
             const deleteForm = document.getElementById('deleteForm');
             const penyakitName = document.getElementById('penyakitName');
+            const warningEl = document.getElementById('warningPenyakitGejala');
 
             deleteForm.action = `{{ url('penyakit') }}/${id}`;
             penyakitName.textContent = name;
+            
+            if (relationCount > 0) {
+                warningEl.classList.remove('d-none');
+            } else {
+                warningEl.classList.add('d-none');
+            }
 
             $('#deleteModal').modal('show');
         }

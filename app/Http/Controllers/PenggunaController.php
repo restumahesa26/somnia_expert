@@ -110,6 +110,7 @@ class PenggunaController extends Controller
     {
         $user = User::findOrFail($id);
 
+        $user->konsultasis()->delete();
         $user->delete();
         return redirect()
             ->route('pengguna.index')
