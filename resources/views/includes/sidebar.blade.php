@@ -6,7 +6,7 @@
         <div id="sidebar-menu">
 
             <div class="logo-box">
-                <a href="index.html" class="logo logo-light">
+                <a href="{{ route('dashboard') }}" class="logo logo-light">
                     <span class="logo-sm">
                         <img src="{{ url('dist/assets/images/logo-sm.png') }}" alt="" height="22">
                     </span>
@@ -14,7 +14,7 @@
                         <img src="{{ url('dist/assets/images/logo-light.png') }}" alt="" height="50">
                     </span>
                 </a>
-                <a href="index.html" class="logo logo-dark">
+                <a href="{{ route('dashboard') }}" class="logo logo-dark">
                     <span class="logo-sm">
                         <img src="{{ url('dist/assets/images/logo-sm.png') }}" alt="" height="22">
                     </span>
@@ -26,7 +26,7 @@
 
             <ul id="side-menu">
 
-                <li class="menu-title">Menu</li>
+                <li class="menu-title">Menu Utama</li>
                 <li class="{{ request()->segment(1) === 'dashboard' ? 'menuitem-active' : '' }}">
                     <a href="{{ route('dashboard') }}" class="tp-link {{ request()->segment(1) === 'dashboard' ? 'active' : '' }}">
                         <i data-feather="home"></i>
@@ -38,12 +38,12 @@
                     <li class="{{ request()->segment(1) === 'gejala' ? 'menuitem-active' : '' }}">
                         <a href="#gejalaMenu" data-bs-toggle="collapse">
                             <i data-feather="list"></i>
-                            <span> Gejala </span>
+                            <span> Data Gejala </span>
                             <span class="menu-arrow"></span>
                         </a>
                         <div class="collapse {{ request()->segment(1) === 'gejala' ? 'show' : '' }}" id="gejalaMenu">
                             <ul class="nav-second-level">
-                                <li class="{{ request()->segment(1) === 'gejala' && request()->segment(3) === 'edit' ? 'menuitem-active' : '' }}">
+                                <li class="{{ request()->segment(1) === 'gejala' && (request()->segment(3) === 'edit' || request()->segment(2) === '' || request()->segment(2) == null) ? 'menuitem-active' : '' }}">
                                     <a href="{{ route('gejala.index') }}" class="tp-link">List Gejala</a>
                                 </li>
                                 <li class="{{ request()->segment(1) === 'gejala' && request()->segment(2) === 'create' ? 'menuitem-active' : '' }}">
@@ -56,12 +56,12 @@
                     <li class="{{ request()->segment(1) === 'penyakit' ? 'menuitem-active' : '' }}">
                         <a href="#penyakitMenu" data-bs-toggle="collapse">
                             <i data-feather="book-open"></i>
-                            <span>Penyakit</span>
+                            <span> Data Penyakit </span>
                             <span class="menu-arrow"></span>
                         </a>
                         <div class="collapse {{ request()->segment(1) === 'penyakit' ? 'show' : '' }}" id="penyakitMenu">
                             <ul class="nav-second-level">
-                                <li class="{{ request()->segment(1) === 'penyakit' && request()->segment(3) === 'edit' ? 'menuitem-active' : '' }}">
+                                <li class="{{ request()->segment(1) === 'penyakit' && (request()->segment(3) === 'edit' || request()->segment(2) === '' || request()->segment(2) == null) ? 'menuitem-active' : '' }}">
                                     <a href="{{ route('penyakit.index') }}" class="tp-link">List Penyakit</a>
                                 </li>
                                 <li class="{{ request()->segment(1) === 'penyakit' && request()->segment(2) === 'create' ? 'menuitem-active' : '' }}">
@@ -73,24 +73,26 @@
 
                     <li class="{{ request()->segment(1) === 'penyakit-gejala' ? 'menuitem-active' : '' }}">
                         <a href="{{ route('penyakit-gejala.index') }}" class="tp-link {{ request()->segment(1) === 'penyakit-gejala' ? 'active' : '' }}">
-                            <i data-feather="home"></i>
-                            <span> Bobot Gejala</span>
+                            <i data-feather="bar-chart-2"></i>
+                            <span> Bobot Gejala </span>
                         </a>
                     </li>
                 @endif
 
-                <li class="{{ request()->segment(1) === 'diagnosa' ? 'menuitem-active' : '' }}">
+                <li class="menu-title">Layanan</li>
+
+                <li class="{{ request()->segment(1) === 'diagnosa' || request()->segment(1) === 'konsultasi' ? 'menuitem-active' : '' }}">
                     <a href="#diagnosisMenu" data-bs-toggle="collapse">
                         <i data-feather="command"></i>
                         <span> Screening </span>
                         <span class="menu-arrow"></span>
                     </a>
-                    <div class="collapse {{ request()->segment(1) === 'diagnosa' ? 'show' : '' }}" id="diagnosisMenu">
+                    <div class="collapse {{ request()->segment(1) === 'diagnosa' || request()->segment(1) === 'konsultasi' ? 'show' : '' }}" id="diagnosisMenu">
                         <ul class="nav-second-level">
                             <li class="{{ request()->segment(1) === 'konsultasi' ? 'menuitem-active' : '' }}">
                                 <a href="{{ route('diagnosa.form') }}" class="tp-link">Screening Baru</a>
                             </li>
-                            <li class="{{ request()->segment(1) === 'diagnosa' && request()->segment(2) === 'detail' ? 'menuitem-active' : '' }}">
+                            <li class="{{ request()->segment(1) === 'diagnosa' && (request()->segment(2) === 'detail' || request()->segment(2) === 'riwayat' || request()->routeIs('diagnosa.riwayat')) ? 'menuitem-active' : '' }}">
                                 <a href="{{ route('diagnosa.riwayat') }}" class="tp-link">Riwayat Screening</a>
                             </li>
                         </ul>
@@ -101,7 +103,7 @@
                     <li class="{{ request()->segment(1) === 'pengguna' ? 'menuitem-active' : '' }}">
                         <a href="{{ route('pengguna.index') }}" class="tp-link {{ request()->segment(1) === 'pengguna' ? 'active' : '' }}">
                             <i data-feather="users"></i>
-                            <span> Data Pengguna</span>
+                            <span> Data Pengguna </span>
                         </a>
                     </li>
                 @endif

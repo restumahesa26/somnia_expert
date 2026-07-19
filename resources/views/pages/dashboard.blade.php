@@ -3,136 +3,95 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
-    <div class="flex-grow-1">
-        <h4 class="fs-18 fw-semibold m-0">Dashboard</h4>
-    </div>
+<div class="mb-4 mt-3">
+    <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Halo, {{ \App\Helpers\Helper::getFirstName(Auth::user()->nama) }}! 👋</h2>
+    <p class="text-slate-500 mt-2">Selamat datang di dashboard SomniaExpert. Berikut adalah ringkasan hasil screening tidur Anda.</p>
 </div>
 
 <!-- Start Main Widgets -->
-<div class="row">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="p-2 border border-primary border-opacity-10 bg-primary-subtle rounded-2 me-2">
-                        <div class="bg-primary rounded-circle widget-size text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                                <path fill="#ffffff" d="M20 6c0-2.2-1.8-4-4-4s-4 1.8-4 4c0 2.2 1.8 4 4 4s4-1.8 4-4m-4 2c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2M4 7c0 2.8 2.2 5 5 5s5-2.2 5-5s-2.2-5-5-5s-5 2.2-5 5m5 3c-1.7 0-3-1.3-3-3s1.3-3 3-3s3 1.3 3 3s-1.3 3-3 3m5.9 8.3c.3-.7.8-1.3 1.5-1.7C17.6 15.7 19.6 15 22 15v-2c-2.8 0-5.2.9-6.8 2c-.3-.7-.9-1.3-1.6-1.7C11.6 12.2 8.9 11 6 11s-5.6 1.2-7.6 2.3C1.6 14.1 1 16 1 18v4h11.1c-.1-.3-.1-.7-.1-1c0-1.8 1.5-3.3 3.3-3.3c1.8 0 3.3 1.5 3.3 3.3c0 .3 0 .7-.1 1H22v-4c-2.2 0-3.9.6-5 1.3c-.8.5-1.4 1-1.9 1.7c-.3.4-.5.9-.6 1.4c-.2.6-.3 1.1-.3 1.6h2c0-.3.1-.7.2-1c.2-.4.3-.7.5-1z"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <h5>Total Screening Sekarang</h5>
-                        <h3 class="mb-0 fs-22 text-dark me-3" id="total-diagnoses"><i class="mdi mdi-spin mdi-loading fs-4"></i></h3>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <div class="avatar avatar-sm">
-                            <div class="avatar-title bg-primary-subtle text-primary rounded">
-                                <i class="mdi mdi-chart-bar fs-20"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    
+    <!-- Widget 1 -->
+    <div class="card relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
+        <div class="card-body relative z-10 flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Screening</p>
+                <h3 class="text-4xl font-black text-slate-800" id="total-diagnoses"><i class="mdi mdi-spin mdi-loading fs-4"></i></h3>
+            </div>
+            <div class="w-16 h-16 bg-blue-50 text-secondary rounded-2xl flex items-center justify-center shadow-inner">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="p-2 border border-secondary border-opacity-10 bg-secondary-subtle rounded-2 me-2">
-                        <div class="bg-secondary rounded-circle widget-size text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                                <path fill="#ffffff" d="m10 17l-5-5l1.41-1.42L10 14.17l7.59-7.59L19 8m-7-6A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <h5 class="mb-2">Hasil Terakhir</h5>
-                        <h3 class="fs-16" id="last-result"><i class="mdi mdi-spin mdi-loading fs-5"></i></h3>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <div class="avatar avatar-sm">
-                            <div class="avatar-title bg-secondary-subtle text-secondary rounded">
-                                <i class="mdi mdi-check-circle fs-20"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Widget 2 -->
+    <div class="card relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
+        <div class="card-body relative z-10 flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Hasil Terakhir</p>
+                <h3 class="text-2xl font-bold text-slate-800 mt-1 line-clamp-1" id="last-result"><i class="mdi mdi-spin mdi-loading fs-5"></i></h3>
+            </div>
+            <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center shadow-inner flex-shrink-0 ml-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="p-2 border border-warning border-opacity-10 bg-warning-subtle rounded-2 me-2">
-                        <div class="bg-warning rounded-circle widget-size text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                                <path fill="#ffffff" d="M7 15h2c0 1.08 1.37 2 3 2s3-.92 3-2c0-1.1-1.04-1.5-3.24-2.03C9.64 12.44 7 11.78 7 9c0-1.79 1.47-3.31 3.5-3.82V3h3v2.18C15.53 5.69 17 7.21 17 9h-2c0-1.08-1.37-2-3-2s-3 .92-3 2c0 1.1 1.04 1.5 3.24 2.03C14.36 11.56 17 12.22 17 15c0 1.79-1.47 3.31-3.5 3.82V21h-3v-2.18C8.47 18.31 7 16.79 7 15" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <h5 class="mb-2">Tanggal Screening Terakhir</h5>
-                        <h3 class="fs-16" id="last-date"><i class="mdi mdi-spin mdi-loading fs-5"></i></h3>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <div class="avatar avatar-sm">
-                            <div class="avatar-title bg-warning-subtle text-warning rounded">
-                                <i class="mdi mdi-calendar fs-20"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Widget 3 -->
+    <div class="card relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
+        <div class="card-body relative z-10 flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Tgl Terakhir</p>
+                <h3 class="text-xl font-bold text-slate-800 mt-1" id="last-date"><i class="mdi mdi-spin mdi-loading fs-5"></i></h3>
+            </div>
+            <div class="w-16 h-16 bg-purple-50 text-accent rounded-2xl flex items-center justify-center shadow-inner flex-shrink-0 ml-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </div>
         </div>
     </div>
+
 </div>
 <!-- End Main Widgets -->
 
-<!-- start row -->
-<div class="row">
-    <div class="col-md-12 col-xl-8">
-        <div class="card">
-            <div class="card-header">
-                <div class="d-flex align-items-center">
-                    <h5 class="card-title mb-0">Riwayat 10 Screening Terakhir</h5>
-                </div>
-            </div>
+<!-- Recent History Table -->
+<div class="card">
+    <div class="card-header flex justify-between items-center">
+        <h5 class="text-lg font-bold text-slate-800">Riwayat 10 Screening Terakhir</h5>
+        <a href="{{ route('diagnosa.form') }}" class="btn btn-primary text-sm px-4 py-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            Screening Baru
+        </a>
+    </div>
 
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Tanggal</th>
-                                <th>Nama</th>
-                                <th>Gangguan</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recent-table-body">
-                            <tr>
-                                <td colspan="5" class="text-center py-4">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                    <div class="mt-2 text-muted">Memuat data screening...</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <div class="overflow-x-auto">
+        <table class="table w-full">
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Nama</th>
+                    <th>Gangguan Utama</th>
+                    <th>Persentase</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="recent-table-body">
+                <tr>
+                    <td colspan="5" class="text-center py-10">
+                        <svg class="animate-spin h-8 w-8 text-secondary mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <div class="text-slate-500 font-medium">Memuat data screening...</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
@@ -158,7 +117,7 @@ function loadDashboardData() {
         // Update Table
         const tableBody = document.getElementById('recent-table-body');
         if (!data.recentDiagnoses || data.recentDiagnoses.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="5" class="text-center">-- Belum ada riwayat screening --</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-slate-500">Belum ada riwayat screening. Mulai screening pertama Anda sekarang!</td></tr>`;
             return;
         }
 
@@ -166,19 +125,26 @@ function loadDashboardData() {
         let html = '';
         data.recentDiagnoses.forEach(item => {
             const detailUrl = `{{ url('diagnosa/detail') }}/${item.id}`;
+            
+            // Map Bootstrap color to Tailwind class
+            let colorClass = 'bg-blue-100 text-blue-800';
+            if(item.status_color === 'danger') colorClass = 'bg-red-100 text-red-800';
+            if(item.status_color === 'warning') colorClass = 'bg-yellow-100 text-yellow-800';
+            if(item.status_color === 'success') colorClass = 'bg-green-100 text-green-800';
+
             html += `
-                <tr>
-                    <td>${item.created_at}</td>
-                    <td>${currentUserName}</td>
-                    <td>${item.gangguan}</td>
-                    <td>
-                        <span class="badge bg-${item.status_color}-subtle text-${item.status_color}">
+                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-700">${item.created_at}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${currentUserName}</td>
+                    <td class="px-6 py-4 text-sm text-slate-600 font-semibold">${item.gangguan}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${colorClass}">
                             ${parseFloat(item.percent).toFixed(1)}%
                         </span>
                     </td>
-                    <td>
-                        <a href="${detailUrl}" class="btn btn-sm btn-primary">
-                            <i class="mdi mdi-eye"></i>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="${detailUrl}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-secondary hover:bg-secondary hover:text-white transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                         </a>
                     </td>
                 </tr>
@@ -190,7 +156,7 @@ function loadDashboardData() {
         console.error('Error fetching dashboard data:', error);
         document.getElementById('recent-table-body').innerHTML = `
             <tr>
-                <td colspan="5" class="text-center text-danger py-3">
+                <td colspan="5" class="text-center text-red-500 py-10 font-semibold">
                     Gagal memuat data. Silakan muat ulang halaman.
                 </td>
             </tr>
