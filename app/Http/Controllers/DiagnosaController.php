@@ -123,29 +123,13 @@ class DiagnosaController extends Controller
             }
         }
 
-        // Filter: Hapus ID yang sudah dijawab (dari Phase 1)
-        $unansweredQueue = array_diff($queueIds, array_keys($allAnswers));
-
-        // Simpan antrian ke sesi agar konsisten
-        session(['diagnosa_queue' => array_values($unansweredQueue)]);
-
-        // Panggil fungsi processing queue
-        return $this->processQueue($allAnswers, $message);
-    }
-
-    /**
-     * Memproses antrian pertanyaan dan mengirim batch berikutnya ke User.
-     */
-    private function processQueue($allAnswers, $customMessage = null)
-    {
-        $queue = session('diagnosa_queue', []);
-
-        // Filter ulang (just in case)
-        $queue = array_values(array_diff($queue, array_keys($allAnswers)));
-        session(['diagnosa_queue' => $queue]); // Update sesi
-
-        if (empty($queue)) {
-            return response()->json(['status' => 'finish']);
+        // Convert kodes kembali ke array IDs
+        $kodeToId = array_flip($gejalaMap);
+        $nextIds = [];
+        foreach ($toAskKodes as $kode) {
+            if (isset($kodeToId[$kode])) {
+                $nextIds[] = $kodeToId[$kode];
+            }
         }
 
         // Ambil data gejala dari MySQL sesuai urutan path yang ditentukan ($nextIds)
