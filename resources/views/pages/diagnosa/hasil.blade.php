@@ -91,10 +91,6 @@
 
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between w-full pr-4 gap-3">
                             <div class="flex items-center gap-3">
-                                <div
-                                    class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 {{ $isTop ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-500' }}">
-                                    <span class="font-bold text-sm">#{{ $index + 1 }}</span>
-                                </div>
                                 <div>
                                     <span
                                         class="text-xs font-mono font-bold text-slate-400 block leading-tight">{{ $row['penyakit']->kode_penyakit }}</span>
@@ -185,10 +181,10 @@
                                     <div class="table-responsive">
                                         <table class="table table-custom w-full align-middle mb-0 text-sm">
                                             <thead>
-                                                <tr
-                                                    class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
                                                     <th class="py-3 px-3 border-b border-slate-200">Gejala</th>
-                                                    <th class="py-3 px-3 text-center border-b border-slate-200">Credit<br><span
+                                                    <th class="py-3 px-3 text-center border-b border-slate-200">
+                                                        Credit<br><span
                                                             class="text-[9px] font-normal text-slate-400">User</span></th>
                                                     <th class="py-3 px-3 text-center border-b border-slate-200">NS<br><span
                                                             class="text-[9px] font-normal text-slate-400">Total</span></th>
@@ -199,9 +195,11 @@
                                                             class="text-[9px] font-normal text-slate-400">Valid</span></th>
                                                     <th class="py-3 px-3 text-center border-b border-slate-200">CD<br><span
                                                             class="text-[9px] font-normal text-slate-400">VO/TV</span></th>
-                                                    <th class="py-3 px-3 text-center border-b border-slate-200">Weight<br><span
+                                                    <th class="py-3 px-3 text-center border-b border-slate-200">
+                                                        Weight<br><span
                                                             class="text-[9px] font-normal text-slate-400">NS*CD</span></th>
-                                                    <th class="py-3 px-3 text-center border-b border-slate-200">VUR<br><span
+                                                    <th class="py-3 px-3 text-center border-b border-slate-200">
+                                                        VUR<br><span
                                                             class="text-[9px] font-normal text-slate-400">Cr*Wt</span></th>
                                                 </tr>
                                             </thead>
@@ -215,14 +213,25 @@
                                                         $totalVUR += $detail['vur'];
                                                         $totalTV = $detail['tv'];
                                                     @endphp
-                                                    <tr class="{{ $detail['credit'] > 0 ? 'bg-emerald-50/30' : '' }} hover:bg-slate-50 transition-colors">
-                                                        <td class="py-2.5 px-3 relative {{ $detail['credit'] > 0 ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-transparent' }}">
+                                                    <tr
+                                                        class="{{ $detail['credit'] > 0 ? 'bg-emerald-50/30' : '' }} hover:bg-slate-50 transition-colors">
+                                                        <td
+                                                            class="py-2.5 px-3 relative {{ $detail['credit'] > 0 ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-transparent' }}">
                                                             <div class="flex flex-col">
                                                                 <div class="flex items-center gap-1.5">
-                                                                    <span class="font-medium text-slate-700">{{ $gejalas->firstWhere('id', $gejalaId)->nama_gejala }}</span>
-                                                                    @if($detail['credit'] > 0)
-                                                                        <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-100 text-emerald-600" title="Gejala dialami pengguna">
-                                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                                                    <span
+                                                                        class="font-medium text-slate-700">{{ $gejalas->firstWhere('id', $gejalaId)->nama_gejala }}</span>
+                                                                    @if ($detail['credit'] > 0)
+                                                                        <span
+                                                                            class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-100 text-emerald-600"
+                                                                            title="Gejala dialami pengguna">
+                                                                            <svg class="w-3 h-3" fill="none"
+                                                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path stroke-linecap="round"
+                                                                                    stroke-linejoin="round"
+                                                                                    stroke-width="3" d="M5 13l4 4L19 7">
+                                                                                </path>
+                                                                            </svg>
                                                                         </span>
                                                                     @endif
                                                                 </div>
@@ -278,15 +287,20 @@
                                     <div class="table-responsive">
                                         <table class="table table-custom w-full align-middle mb-0 text-sm">
                                             <thead>
-                                                <tr
-                                                    class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                                                    <th class="py-3 px-3 border-b border-slate-200">Gejala Terpilih (Dipilih User)</th>
-                                                    <th class="py-3 px-3 text-center border-b border-slate-200">CF Pakar</th>
-                                                    <th class="py-3 px-3 text-center border-b border-slate-200">Credit User</th>
-                                                    <th class="py-3 px-3 text-center border-b border-slate-200">CF(H,E)<br><span
+                                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                                    <th class="py-3 px-3 border-b border-slate-200">Gejala Terpilih
+                                                        (Dipilih User)</th>
+                                                    <th class="py-3 px-3 text-center border-b border-slate-200">CF Pakar
+                                                    </th>
+                                                    <th class="py-3 px-3 text-center border-b border-slate-200">Credit User
+                                                    </th>
+                                                    <th class="py-3 px-3 text-center border-b border-slate-200">
+                                                        CF(H,E)<br><span
                                                             class="text-[9px] font-normal text-slate-400">Pakar*User</span>
                                                     </th>
-                                                    <th class="py-3 px-3 text-center text-blue-700 border-b border-slate-200">CF * RUR</th>
+                                                    <th
+                                                        class="py-3 px-3 text-center text-blue-700 border-b border-slate-200">
+                                                        CF * RUR</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -411,12 +425,15 @@
         }
 
         /* Fix for bootstrap table border overriding Tailwind's divide-y */
-        .table-custom > :not(caption) > * > * {
+        .table-custom> :not(caption)>*>* {
             border-bottom-width: 0 !important;
         }
+
         .table-custom td {
-            border-bottom: 1px solid #f1f5f9 !important; /* slate-100 */
+            border-bottom: 1px solid #f1f5f9 !important;
+            /* slate-100 */
         }
+
         .table-custom tr:last-child td {
             border-bottom: none !important;
         }

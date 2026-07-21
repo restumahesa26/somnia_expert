@@ -76,9 +76,10 @@
                         <div>
                             <label for="umur" class="block text-sm font-semibold text-slate-700 mb-2">Umur</label>
                             <input type="number" name="umur" id="umur" value="{{ old('umur') }}" required
-                                min="0"
+                                min="18" max="65"
                                 class="w-full px-5 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none @error('umur') border-red-500 ring-red-500/20 @enderror"
                                 placeholder="Misal: 25">
+                            <p id="umur-error" class="mt-2 text-sm text-red-500 hidden"></p>
                             @error('umur')
                                 <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
                             @enderror
@@ -224,6 +225,45 @@
             background: #cbd5e1;
         }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const umurInput = document.getElementById('umur');
+            const umurError = document.getElementById('umur-error');
+
+            function checkUmur() {
+                if (!umurInput.value) return;
+                const value = parseInt(umurInput.value);
+                if (value < 18 || value > 65) {
+                    umurInput.value = '';
+                    umurError.textContent = 'Umur minimal 18 dan maksimal 65 tahun.';
+                    umurError.classList.remove('hidden');
+                    umurInput.classList.add('border-red-500', 'ring-red-500/20');
+                } else {
+                    umurError.classList.add('hidden');
+                    umurInput.classList.remove('border-red-500', 'ring-red-500/20');
+                }
+            }
+
+            // Check on blur/change (when user finishes typing)
+            umurInput.addEventListener('change', checkUmur);
+            
+            umurInput.addEventListener('input', function() {
+                if (!this.value) return;
+                const valStr = this.value;
+                const value = parseInt(valStr);
+                
+                // Jika baru mengetik 1 angka tapi angkanya 0, 7, 8, atau 9, langsung clear (karena tidak mungkin bisa jadi 18-65)
+                if (valStr.length === 1 && (value === 0 || value > 6)) {
+                    checkUmur();
+                } 
+                // Jika sudah mengetik 2 angka (misal 17), bisa langsung divalidasi min dan max
+                else if (valStr.length >= 2) {
+                    checkUmur();
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
